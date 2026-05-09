@@ -36,7 +36,6 @@ const Nav = styled.nav`
 	flex-wrap: wrap;
 	align-items: center;
 	gap: ${(props) => props.theme.spacing.xs};
-	margin-bottom: ${(props) => props.theme.spacing.md};
 	font-family: ${(props) => props.theme.fonts.mono};
 	font-size: ${(props) => props.theme.fontSize.sm};
 `;

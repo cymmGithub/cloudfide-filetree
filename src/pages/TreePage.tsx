@@ -3,6 +3,7 @@ import { useDeferredValue, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { CopyPathButton } from '../components/CopyPathButton';
 import { FileDetails } from '../components/FileDetails';
 import { FolderDetails } from '../components/FolderDetails';
 import { SearchInput } from '../components/SearchInput';
@@ -56,7 +57,10 @@ export function TreePage() {
 						<TreeView tree={tree} currentPath={currentPath} />
 					</Sidebar>
 					<Main>
-						<Breadcrumbs path={currentPath} />
+						<PathBar>
+							<Breadcrumbs path={currentPath} />
+							{currentPath.length > 0 && <CopyPathButton path={currentPath} />}
+						</PathBar>
 						{selectedNode === null ? (
 							<NotFound>Nie znaleziono węzła: /{currentPath.join('/')}</NotFound>
 						) : selectedNode.type === 'file' ? (
@@ -109,6 +113,14 @@ const Sidebar = styled.aside`
 const Main = styled.main`
 	padding: ${(props) => props.theme.spacing.lg};
 	overflow-y: auto;
+`;
+
+const PathBar = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: ${(props) => props.theme.spacing.md};
+	margin-bottom: ${(props) => props.theme.spacing.md};
 `;
 
 const Empty = styled.div`
