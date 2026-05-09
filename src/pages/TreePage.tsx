@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { FileDetails } from '../components/FileDetails';
+import { FolderDetails } from '../components/FolderDetails';
 import { TreeView } from '../components/TreeView';
 import { decodePath } from '../lib/path';
 import { loadTree } from '../lib/storage';
@@ -30,15 +32,11 @@ export function TreePage() {
 			</Sidebar>
 			<Main>
 				{selectedNode === null ? (
-					<Placeholder>Nie znaleziono węzła: /{currentPath.join('/')}</Placeholder>
-				) : currentPath.length === 0 ? (
-					<Placeholder>Wybierz plik lub folder z drzewa.</Placeholder>
+					<NotFound>Nie znaleziono węzła: /{currentPath.join('/')}</NotFound>
+				) : selectedNode.type === 'file' ? (
+					<FileDetails node={selectedNode} path={currentPath} />
 				) : (
-					<Selected>
-						<h2>{selectedNode.name}</h2>
-						<p>Type: {selectedNode.type}</p>
-						<p>Path: /{currentPath.join('/')}</p>
-					</Selected>
+					<FolderDetails node={selectedNode} path={currentPath} />
 				)}
 			</Main>
 		</Layout>
@@ -70,17 +68,7 @@ const Empty = styled.div`
 	color: ${(props) => props.theme.colors.muted};
 `;
 
-const Placeholder = styled.p`
-	color: ${(props) => props.theme.colors.muted};
-`;
-
-const Selected = styled.div`
-	h2 {
-		margin: 0 0 ${(props) => props.theme.spacing.md} 0;
-	}
-
-	p {
-		margin: ${(props) => props.theme.spacing.xs} 0;
-		color: ${(props) => props.theme.colors.muted};
-	}
+const NotFound = styled.p`
+	color: ${(props) => props.theme.colors.error};
+	font-family: ${(props) => props.theme.fonts.mono};
 `;
