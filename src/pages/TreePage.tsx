@@ -54,7 +54,7 @@ export function TreePage() {
 	return (
 		<Layout>
 			<TopBar>
-				<TopBarLeft>
+				<TopBarLeft to="/" aria-label="Back to home">
 					<Brand>~/filetree</Brand>
 					<TopSep>·</TopSep>
 					<BrandDim>inspector</BrandDim>
@@ -169,10 +169,18 @@ const TopBar = styled.div`
 	text-transform: uppercase;
 `;
 
-const TopBarLeft = styled.div`
+const TopBarLeft = styled(Link)`
 	display: inline-flex;
 	align-items: center;
 	gap: 0.8ch;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: none;
+		box-shadow: none;
+	}
 `;
 
 const TopBarMid = styled.div`
@@ -189,6 +197,11 @@ const TopBarRight = styled.div`
 const Brand = styled.span`
 	color: ${(props) => props.theme.colors.text};
 	font-weight: 600;
+	transition: color 0.12s ease;
+
+	${TopBarLeft}:hover & {
+		color: ${(props) => props.theme.colors.accent};
+	}
 `;
 
 const BrandDim = styled.span`
