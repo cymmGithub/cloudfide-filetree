@@ -2,6 +2,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useDeferredValue, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 import { FileDetails } from '../components/FileDetails';
 import { FolderDetails } from '../components/FolderDetails';
 import { SearchInput } from '../components/SearchInput';
@@ -55,10 +56,11 @@ export function TreePage() {
 						<TreeView tree={tree} currentPath={currentPath} />
 					</Sidebar>
 					<Main>
+						<Breadcrumbs path={currentPath} />
 						{selectedNode === null ? (
 							<NotFound>Nie znaleziono węzła: /{currentPath.join('/')}</NotFound>
 						) : selectedNode.type === 'file' ? (
-							<FileDetails node={selectedNode} path={currentPath} />
+							<FileDetails node={selectedNode} />
 						) : (
 							<FolderDetails node={selectedNode} path={currentPath} />
 						)}

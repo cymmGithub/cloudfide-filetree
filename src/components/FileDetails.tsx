@@ -4,10 +4,9 @@ import type { FileNode } from '../types/tree';
 
 interface Props {
 	node: FileNode;
-	path: string[];
 }
 
-export function FileDetails({ node, path }: Props) {
+export function FileDetails({ node }: Props) {
 	return (
 		<Container>
 			<Heading>{node.name}</Heading>
@@ -18,10 +17,6 @@ export function FileDetails({ node, path }: Props) {
 			<Field>
 				<Label>Size</Label>
 				<Value>{formatBytes(node.size)}</Value>
-			</Field>
-			<Field>
-				<Label>Path</Label>
-				<Value>/{path.join('/')}</Value>
 			</Field>
 		</Container>
 	);

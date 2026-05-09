@@ -12,7 +12,6 @@ interface Props {
 
 export function FolderDetails({ node, path }: Props) {
 	const totalSize = calculateSize(node);
-	const displayPath = path.length === 0 ? '/' : `/${path.join('/')}`;
 
 	return (
 		<Container>
@@ -28,10 +27,6 @@ export function FolderDetails({ node, path }: Props) {
 			<Field>
 				<Label>Total size</Label>
 				<Value>{formatBytes(totalSize)}</Value>
-			</Field>
-			<Field>
-				<Label>Path</Label>
-				<Value>{displayPath}</Value>
 			</Field>
 
 			<SubHeading>Contents</SubHeading>
