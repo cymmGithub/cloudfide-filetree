@@ -1,5 +1,5 @@
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { FileDetails } from '../components/FileDetails';
@@ -19,8 +19,15 @@ export function TreePage() {
 	const currentPath = decodePath(splat);
 	const query = rawQuery.trim();
 
+	// Defer the heavy search compute (flat-index filter + render of up to 200
+	// results) so the layout switch and input feel responsive on big trees.
+	const deferredQuery = useDeferredValue(query);
+
 	const flatIndex = useMemo(() => (tree ? buildFlatIndex(tree) : []), [tree]);
-	const searchResults = useMemo(() => searchIndex(flatIndex, query), [flatIndex, query]);
+	const searchResults = useMemo(
+		() => searchIndex(flatIndex, deferredQuery),
+		[flatIndex, deferredQuery],
+	);
 
 	if (!tree) {
 		return (
@@ -40,7 +47,7 @@ export function TreePage() {
 			</TopBar>
 			{query ? (
 				<SearchBody>
-					<SearchResults results={searchResults} query={query} />
+					<SearchResults results={searchResults} query={deferredQuery} />
 				</SearchBody>
 			) : (
 				<SplitBody>

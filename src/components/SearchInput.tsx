@@ -1,12 +1,12 @@
-import { debounce, parseAsString, useQueryState } from 'nuqs';
+import { parseAsString, useQueryState } from 'nuqs';
 import styled from 'styled-components';
 
-const DEBOUNCE_MS = 200;
+const THROTTLE_MS = 200;
 
 export function SearchInput() {
 	const [value, setValue] = useQueryState(
 		'q',
-		parseAsString.withDefault('').withOptions({ limitUrlUpdates: debounce(DEBOUNCE_MS) }),
+		parseAsString.withDefault('').withOptions({ throttleMs: THROTTLE_MS }),
 	);
 
 	return (
