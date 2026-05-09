@@ -35,18 +35,22 @@ const Nav = styled.nav`
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: ${(props) => props.theme.spacing.xs};
+	gap: 0.4ch;
 	font-family: ${(props) => props.theme.fonts.mono};
 	font-size: ${(props) => props.theme.fontSize.sm};
+	min-width: 0;
 `;
 
 const Crumb = styled(Link)`
 	color: ${(props) => props.theme.colors.muted};
 	text-decoration: none;
+	padding: 0;
+	transition: color 0.12s ease;
 
 	&:hover {
 		color: ${(props) => props.theme.colors.accent};
-		text-decoration: underline;
+		box-shadow: inset 0 -1px 0 ${(props) => props.theme.colors.accent};
+		text-decoration: none;
 	}
 `;
 
@@ -56,5 +60,5 @@ const Current = styled.span`
 `;
 
 const Separator = styled.span`
-	color: ${(props) => props.theme.colors.muted};
+	color: ${(props) => props.theme.colors.dim};
 `;

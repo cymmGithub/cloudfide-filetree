@@ -29,9 +29,10 @@ export function HighlightedText({ text, query }: Props) {
 }
 
 const Mark = styled.mark`
-	background: #fef08a;
-	color: ${(props) => props.theme.colors.text};
-	padding: 0 1px;
-	border-radius: 2px;
+	background: ${(props) => props.theme.colors.accentSoft};
+	color: ${(props) => props.theme.colors.accent};
+	padding: 0 0.15ch;
+	border-radius: 0;
 	font-weight: 600;
+	box-shadow: inset 0 -1px 0 ${(props) => props.theme.colors.accent};
 `;

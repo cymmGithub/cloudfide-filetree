@@ -26,11 +26,13 @@ export function CopyPathButton({ path }: Props) {
 		}
 	}
 
-	const label = status === 'copied' ? '✓ Copied' : status === 'error' ? '✗ Failed' : 'Copy path';
+	const glyph = status === 'copied' ? '✓' : status === 'error' ? '✗' : '⎘';
+	const label = status === 'copied' ? 'copied' : status === 'error' ? 'failed' : 'copy path';
 
 	return (
 		<Button type="button" onClick={handleCopy} aria-live="polite" $status={status} title={fullPath}>
-			{label}
+			<Glyph $status={status}>{glyph}</Glyph>
+			<span>{label}</span>
 		</Button>
 	);
 }
@@ -38,23 +40,44 @@ export function CopyPathButton({ path }: Props) {
 const Button = styled.button<{ $status: Status }>`
 	display: inline-flex;
 	align-items: center;
-	gap: ${(props) => props.theme.spacing.xs};
+	gap: 0.6ch;
 	padding: ${(props) => props.theme.spacing.xs} ${(props) => props.theme.spacing.sm};
-	border: 1px solid ${(props) => props.theme.colors.border};
-	border-radius: ${(props) => props.theme.radius.sm};
-	background: ${(props) => props.theme.colors.bg};
+	border: 1px solid
+		${(props) =>
+			props.$status === 'copied'
+				? props.theme.colors.success
+				: props.$status === 'error'
+					? props.theme.colors.error
+					: props.theme.colors.border};
+	background: transparent;
 	color: ${(props) =>
 		props.$status === 'copied'
 			? props.theme.colors.success
 			: props.$status === 'error'
 				? props.theme.colors.error
 				: props.theme.colors.muted};
-	font-size: ${(props) => props.theme.fontSize.sm};
 	font-family: ${(props) => props.theme.fonts.mono};
+	font-size: ${(props) => props.theme.fontSize.micro};
+	letter-spacing: ${(props) => props.theme.tracking.wider};
+	text-transform: uppercase;
 	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		color 0.15s ease,
+		background 0.15s ease;
 
 	&:hover {
-		background: ${(props) => props.theme.colors.surface};
-		color: ${(props) => props.theme.colors.text};
+		border-color: ${(props) => props.theme.colors.accent};
+		color: ${(props) => props.theme.colors.accent};
 	}
+`;
+
+const Glyph = styled.span<{ $status: Status }>`
+	font-size: ${(props) => props.theme.fontSize.sm};
+	color: ${(props) =>
+		props.$status === 'copied'
+			? props.theme.colors.success
+			: props.$status === 'error'
+				? props.theme.colors.error
+				: props.theme.colors.muted};
 `;

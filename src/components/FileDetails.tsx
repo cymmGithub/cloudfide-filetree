@@ -7,17 +7,40 @@ interface Props {
 }
 
 export function FileDetails({ node }: Props) {
+	const ext = node.name.includes('.') ? node.name.split('.').pop() : null;
+
 	return (
 		<Container>
-			<Heading>{node.name}</Heading>
-			<Field>
-				<Label>Type</Label>
-				<Value>File</Value>
-			</Field>
-			<Field>
-				<Label>Size</Label>
-				<Value>{formatBytes(node.size)}</Value>
-			</Field>
+			<HeadBlock>
+				<Eyebrow>
+					<EyebrowGlyph>·</EyebrowGlyph>
+					<span>file</span>
+				</Eyebrow>
+				<Heading>{node.name}</Heading>
+			</HeadBlock>
+
+			<Record>
+				<Row>
+					<Key>type</Key>
+					<Sep>│</Sep>
+					<Val>file</Val>
+				</Row>
+				{ext && (
+					<Row>
+						<Key>ext</Key>
+						<Sep>│</Sep>
+						<Val>.{ext}</Val>
+					</Row>
+				)}
+				<Row>
+					<Key>bytes</Key>
+					<Sep>│</Sep>
+					<Val>
+						<Strong>{formatBytes(node.size)}</Strong>
+						<Dim>· {node.size.toLocaleString('en-US')} B</Dim>
+					</Val>
+				</Row>
+			</Record>
 		</Container>
 	);
 }
@@ -25,28 +48,77 @@ export function FileDetails({ node }: Props) {
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: ${(props) => props.theme.spacing.sm};
+	gap: ${(props) => props.theme.spacing.lg};
+	max-width: 720px;
+`;
+
+const HeadBlock = styled.div`
+	display: flex;
+	flex-direction: column;
+	gap: ${(props) => props.theme.spacing.xs};
+	padding-bottom: ${(props) => props.theme.spacing.md};
+	border-bottom: ${(props) => props.theme.rule.hairline};
+`;
+
+const Eyebrow = styled.div`
+	display: inline-flex;
+	gap: 0.6ch;
+	align-items: center;
+	font-size: ${(props) => props.theme.fontSize.micro};
+	letter-spacing: ${(props) => props.theme.tracking.widest};
+	text-transform: uppercase;
+	color: ${(props) => props.theme.colors.muted};
+`;
+
+const EyebrowGlyph = styled.span`
+	color: ${(props) => props.theme.colors.accent};
 `;
 
 const Heading = styled.h2`
-	margin: 0 0 ${(props) => props.theme.spacing.md} 0;
+	margin: 0;
 	font-size: ${(props) => props.theme.fontSize.xl};
+	font-weight: 500;
+	letter-spacing: ${(props) => props.theme.tracking.tight};
+	color: ${(props) => props.theme.colors.text};
+	word-break: break-all;
 `;
 
-const Field = styled.div`
-	display: flex;
-	gap: ${(props) => props.theme.spacing.md};
+const Record = styled.div`
+	display: grid;
+	gap: ${(props) => props.theme.spacing.xs};
+`;
+
+const Row = styled.div`
+	display: grid;
+	grid-template-columns: 7ch auto 1fr;
+	align-items: center;
+	gap: 0.8ch;
 	font-size: ${(props) => props.theme.fontSize.sm};
+	padding: ${(props) => props.theme.spacing.xs} 0;
 `;
 
-const Label = styled.span`
-	color: ${(props) => props.theme.colors.muted};
-	min-width: 100px;
+const Key = styled.span`
+	color: ${(props) => props.theme.colors.dim};
+	letter-spacing: ${(props) => props.theme.tracking.wider};
+	text-transform: uppercase;
+	font-size: ${(props) => props.theme.fontSize.micro};
+`;
+
+const Sep = styled.span`
+	color: ${(props) => props.theme.colors.border};
+`;
+
+const Val = styled.span`
+	color: ${(props) => props.theme.colors.text};
+	word-break: break-all;
+`;
+
+const Strong = styled.span`
+	color: ${(props) => props.theme.colors.text};
 	font-weight: 500;
 `;
 
-const Value = styled.span`
-	font-family: ${(props) => props.theme.fonts.mono};
-	color: ${(props) => props.theme.colors.text};
-	word-break: break-all;
+const Dim = styled.span`
+	color: ${(props) => props.theme.colors.dim};
+	margin-left: 0.6ch;
 `;

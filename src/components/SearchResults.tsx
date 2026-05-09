@@ -13,7 +13,12 @@ interface Props {
 
 export function SearchResults({ results, query }: Props) {
 	if (results.length === 0) {
-		return <Empty>Brak wyników dla &quot;{query}&quot;</Empty>;
+		return (
+			<Empty>
+				<EmptyGlyph>—</EmptyGlyph>
+				<span>Brak wyników dla &quot;{query}&quot;</span>
+			</Empty>
+		);
 	}
 
 	const truncated = results.length > VISIBLE_LIMIT;
@@ -23,12 +28,22 @@ export function SearchResults({ results, query }: Props) {
 		<Container>
 			{truncated ? (
 				<TruncationNote role="status">
-					Pokazuję pierwsze <strong>{VISIBLE_LIMIT}</strong> z{' '}
-					<strong>{results.length.toLocaleString('en-US')}</strong> dopasowań — uściślij zapytanie.
+					<NoteTag>note</NoteTag>
+					<NoteSep>│</NoteSep>
+					<span>
+						Pokazuję pierwsze <strong>{VISIBLE_LIMIT}</strong> z{' '}
+						<strong>{results.length.toLocaleString('en-US')}</strong> dopasowań — uściślij
+						zapytanie.
+					</span>
 				</TruncationNote>
 			) : (
 				<Count>
-					{results.length} {results.length === 1 ? 'wynik' : 'wyników'} dla &quot;{query}&quot;
+					<CountTag>matches</CountTag>
+					<CountSep>│</CountSep>
+					<CountVal>
+						<strong>{results.length}</strong> {results.length === 1 ? 'wynik' : 'wyników'} dla
+						&quot;{query}&quot;
+					</CountVal>
 				</Count>
 			)}
 			<List>
@@ -38,13 +53,14 @@ export function SearchResults({ results, query }: Props) {
 					return (
 						<li key={entry.segments.join('/')}>
 							<ResultLink to={`/tree/${encodePath([...entry.segments])}`}>
-								<Icon>{entry.type === 'file' ? '📄' : '📁'}</Icon>
+								<Glyph $type={entry.type}>{entry.type === 'file' ? '·' : '▸'}</Glyph>
 								<NameAndPath>
 									<Name>
 										<HighlightedText text={entry.name} query={query} />
 									</Name>
 									<ParentPath>in {parentPath}</ParentPath>
 								</NameAndPath>
+								<ResultArrow>→</ResultArrow>
 							</ResultLink>
 						</li>
 					);
@@ -62,16 +78,41 @@ const Container = styled.div`
 
 const Count = styled.p`
 	margin: 0;
+	display: inline-flex;
+	gap: 0.8ch;
+	align-items: center;
 	color: ${(props) => props.theme.colors.muted};
 	font-size: ${(props) => props.theme.fontSize.sm};
 `;
 
+const CountTag = styled.span`
+	color: ${(props) => props.theme.colors.dim};
+	letter-spacing: ${(props) => props.theme.tracking.wider};
+	text-transform: uppercase;
+	font-size: ${(props) => props.theme.fontSize.micro};
+`;
+
+const CountSep = styled.span`
+	color: ${(props) => props.theme.colors.border};
+`;
+
+const CountVal = styled.span`
+	color: ${(props) => props.theme.colors.muted};
+
+	strong {
+		color: ${(props) => props.theme.colors.text};
+		font-weight: 600;
+	}
+`;
+
 const TruncationNote = styled.p`
 	margin: 0;
+	display: flex;
+	gap: 0.8ch;
+	align-items: baseline;
 	padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
-	background: ${(props) => props.theme.colors.surface};
-	border: 1px solid ${(props) => props.theme.colors.border};
-	border-radius: ${(props) => props.theme.radius.md};
+	background: ${(props) => props.theme.colors.accentSoft};
+	border-left: 2px solid ${(props) => props.theme.colors.accent};
 	color: ${(props) => props.theme.colors.muted};
 	font-size: ${(props) => props.theme.fontSize.sm};
 
@@ -81,9 +122,29 @@ const TruncationNote = styled.p`
 	}
 `;
 
+const NoteTag = styled.span`
+	color: ${(props) => props.theme.colors.accent};
+	letter-spacing: ${(props) => props.theme.tracking.wider};
+	text-transform: uppercase;
+	font-size: ${(props) => props.theme.fontSize.micro};
+	font-weight: 500;
+`;
+
+const NoteSep = styled.span`
+	color: ${(props) => props.theme.colors.border};
+`;
+
 const Empty = styled.p`
-	color: ${(props) => props.theme.colors.muted};
-	font-style: italic;
+	display: inline-flex;
+	gap: 0.6ch;
+	align-items: center;
+	color: ${(props) => props.theme.colors.dim};
+	font-size: ${(props) => props.theme.fontSize.sm};
+	margin: 0;
+`;
+
+const EmptyGlyph = styled.span`
+	color: ${(props) => props.theme.colors.border};
 `;
 
 const List = styled.ul`
@@ -92,51 +153,74 @@ const List = styled.ul`
 	padding: 0;
 	display: flex;
 	flex-direction: column;
-	gap: ${(props) => props.theme.spacing.xs};
 `;
 
 const ResultLink = styled(Link)`
-	display: flex;
+	display: grid;
+	grid-template-columns: 1.5ch 1fr auto;
 	align-items: center;
-	gap: ${(props) => props.theme.spacing.sm};
+	gap: 0.8ch;
 	padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
-	border: 1px solid ${(props) => props.theme.colors.border};
-	border-radius: ${(props) => props.theme.radius.md};
 	color: ${(props) => props.theme.colors.text};
 	text-decoration: none;
-	background: ${(props) => props.theme.colors.bg};
+	border-top: ${(props) => props.theme.rule.hairline};
+	transition: background 0.12s ease;
+
+	li:last-child & {
+		border-bottom: ${(props) => props.theme.rule.hairline};
+	}
 
 	&:hover {
 		background: ${(props) => props.theme.colors.surface};
-		border-color: ${(props) => props.theme.colors.accent};
 		text-decoration: none;
+		box-shadow: none;
 	}
 `;
 
-const Icon = styled.span`
-	flex-shrink: 0;
-	font-size: ${(props) => props.theme.fontSize.lg};
+const Glyph = styled.span<{ $type: 'file' | 'folder' }>`
+	color: ${(props) =>
+		props.$type === 'folder' ? props.theme.colors.accent : props.theme.colors.dim};
+	font-weight: ${(props) => (props.$type === 'folder' ? 500 : 400)};
+	width: 1.5ch;
+	text-align: center;
 `;
 
 const NameAndPath = styled.div`
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
-	flex: 1;
+	gap: 0.1rem;
 `;
 
 const Name = styled.span`
 	font-weight: 500;
+	font-size: ${(props) => props.theme.fontSize.sm};
+	color: ${(props) => props.theme.colors.text};
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 `;
 
 const ParentPath = styled.span`
-	color: ${(props) => props.theme.colors.muted};
-	font-size: ${(props) => props.theme.fontSize.sm};
+	color: ${(props) => props.theme.colors.dim};
+	font-size: ${(props) => props.theme.fontSize.micro};
 	font-family: ${(props) => props.theme.fonts.mono};
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+`;
+
+const ResultArrow = styled.span`
+	color: ${(props) => props.theme.colors.dim};
+	font-size: ${(props) => props.theme.fontSize.sm};
+	opacity: 0;
+	transition:
+		opacity 0.15s ease,
+		transform 0.15s ease;
+
+	${ResultLink}:hover & {
+		opacity: 1;
+		color: ${(props) => props.theme.colors.accent};
+		transform: translateX(2px);
+	}
 `;
