@@ -33,4 +33,17 @@ describe('SearchResults', () => {
 		const mark = container.querySelector('mark');
 		expect(mark?.textContent).toBe('But');
 	});
+
+	it('truncates results above the visible limit and shows a refinement note', () => {
+		const many: FlatEntry[] = Array.from({ length: 250 }, (_, i) => ({
+			name: `file-${i}.ts`,
+			segments: [`file-${i}.ts`],
+			type: 'file',
+			size: 0,
+		}));
+		const { container } = renderWithProviders(<SearchResults results={many} query="file" />);
+		expect(screen.getByRole('status').textContent).toMatch(/200/);
+		expect(screen.getByRole('status').textContent).toMatch(/250/);
+		expect(container.querySelectorAll('li')).toHaveLength(200);
+	});
 });
