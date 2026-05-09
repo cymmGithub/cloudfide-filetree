@@ -1,3 +1,4 @@
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { HomePage } from './pages/HomePage';
@@ -10,11 +11,13 @@ function App() {
 		<ThemeProvider theme={theme}>
 			<GlobalStyles />
 			<BrowserRouter>
-				<Routes>
-					<Route path="/" element={<HomePage />} />
-					<Route path="/tree/*" element={<TreePage />} />
-					<Route path="*" element={<div>Not found</div>} />
-				</Routes>
+				<NuqsAdapter>
+					<Routes>
+						<Route path="/" element={<HomePage />} />
+						<Route path="/tree/*" element={<TreePage />} />
+						<Route path="*" element={<div>Not found</div>} />
+					</Routes>
+				</NuqsAdapter>
 			</BrowserRouter>
 		</ThemeProvider>
 	);

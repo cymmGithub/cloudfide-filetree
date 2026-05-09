@@ -17,6 +17,7 @@
 		"prepare": "husky"
 	},
 	"dependencies": {
+		"nuqs": "^2.8.9",
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5",
 		"react-dropzone": "^15.0.0",
