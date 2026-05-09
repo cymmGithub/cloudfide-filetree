@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import { HomePage } from './pages/HomePage';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { theme } from './styles/theme';
 
@@ -9,7 +10,7 @@ function App() {
 			<GlobalStyles />
 			<BrowserRouter>
 				<Routes>
-					<Route path="/" element={<div>Home (TODO)</div>} />
+					<Route path="/" element={<HomePage />} />
 					<Route path="/tree/*" element={<div>Tree (TODO)</div>} />
 					<Route path="*" element={<div>Not found</div>} />
 				</Routes>
