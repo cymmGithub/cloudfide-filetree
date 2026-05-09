@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { encodePath } from '../lib/path';
 import type { FlatEntry } from '../lib/traverse';
+import { FolderIcon } from './FolderIcon';
 import { HighlightedText } from './HighlightedText';
 
 const VISIBLE_LIMIT = 200;
@@ -53,7 +54,9 @@ export function SearchResults({ results, query }: Props) {
 					return (
 						<li key={entry.segments.join('/')}>
 							<ResultLink to={`/tree/${encodePath([...entry.segments])}`}>
-								<Glyph $type={entry.type}>{entry.type === 'file' ? '·' : '▸'}</Glyph>
+								<Glyph $type={entry.type}>
+									{entry.type === 'file' ? '·' : <FolderIcon size={12} />}
+								</Glyph>
 								<NameAndPath>
 									<Name>
 										<HighlightedText text={entry.name} query={query} />
@@ -179,10 +182,18 @@ const ResultLink = styled(Link)`
 
 const Glyph = styled.span<{ $type: 'file' | 'folder' }>`
 	color: ${(props) =>
-		props.$type === 'folder' ? props.theme.colors.accent : props.theme.colors.dim};
+		props.$type === 'folder' ? props.theme.colors.muted : props.theme.colors.dim};
 	font-weight: ${(props) => (props.$type === 'folder' ? 500 : 400)};
 	width: 1.5ch;
-	text-align: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: color 0.12s ease;
+
+	a:hover & {
+		color: ${(props) =>
+			props.$type === 'folder' ? props.theme.colors.accent : props.theme.colors.muted};
+	}
 `;
 
 const NameAndPath = styled.div`

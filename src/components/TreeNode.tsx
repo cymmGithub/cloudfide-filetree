@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { encodePath } from '../lib/path';
 import type { TreeNode as TreeNodeType } from '../types/tree';
+import { FolderIcon } from './FolderIcon';
 
 interface Props {
 	node: TreeNodeType;
@@ -45,6 +46,9 @@ export function TreeNode({ node, urlPath, expanded, onToggle, currentPath }: Pro
 				</Toggle>
 				<NodeLink to={`/tree/${encodePath(urlPath)}`} $current={isCurrent}>
 					<Tick $current={isCurrent} />
+					<FolderGlyph $current={isCurrent} $expanded={isExpanded}>
+						<FolderIcon />
+					</FolderGlyph>
 					<FolderName $current={isCurrent} $expanded={isExpanded}>
 						{node.name}
 					</FolderName>
@@ -146,6 +150,26 @@ const Name = styled.span<{ $current: boolean }>`
 	font-weight: ${(props) => (props.$current ? 500 : 400)};
 `;
 
+const FolderGlyph = styled.span<{ $current: boolean; $expanded: boolean }>`
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.4ch;
+	margin-right: 0.7ch;
+	flex-shrink: 0;
+	color: ${(props) =>
+		props.$current
+			? props.theme.colors.accent
+			: props.$expanded
+				? props.theme.colors.muted
+				: props.theme.colors.dim};
+	transition: color 0.12s ease;
+
+	a:hover & {
+		color: ${(props) => (props.$current ? props.theme.colors.accent : props.theme.colors.muted)};
+	}
+`;
+
 const FolderName = styled.span<{ $current: boolean; $expanded: boolean }>`
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -157,12 +181,6 @@ const FolderName = styled.span<{ $current: boolean; $expanded: boolean }>`
 			: props.$expanded
 				? props.theme.colors.text
 				: props.theme.colors.muted};
-
-	&::after {
-		content: '/';
-		color: ${(props) => props.theme.colors.dim};
-		margin-left: 0.1ch;
-	}
 `;
 
 const ChildList = styled.ul`

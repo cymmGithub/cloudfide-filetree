@@ -4,6 +4,7 @@ import { formatBytes } from '../lib/format';
 import { encodePath } from '../lib/path';
 import { calculateSize } from '../lib/traverse';
 import type { FolderNode } from '../types/tree';
+import { FolderIcon } from './FolderIcon';
 
 interface Props {
 	node: FolderNode;
@@ -19,7 +20,9 @@ export function FolderDetails({ node, path }: Props) {
 		<Container>
 			<HeadBlock>
 				<Eyebrow>
-					<EyebrowGlyph>▾</EyebrowGlyph>
+					<EyebrowIcon>
+						<FolderIcon size={11} />
+					</EyebrowIcon>
 					<span>folder</span>
 				</Eyebrow>
 				<Heading>{node.name || '/'}</Heading>
@@ -70,7 +73,9 @@ export function FolderDetails({ node, path }: Props) {
 					{node.children.map((child) => (
 						<li key={child.name}>
 							<ChildLink to={`/tree/${encodePath([...path, child.name])}`}>
-								<ChildGlyph $type={child.type}>{child.type === 'file' ? '·' : '▸'}</ChildGlyph>
+								<ChildGlyph $type={child.type}>
+									{child.type === 'file' ? '·' : <FolderIcon size={12} />}
+								</ChildGlyph>
 								<ChildName>{child.name}</ChildName>
 								{child.type === 'file' ? (
 									<ChildSize>{formatBytes(child.size)}</ChildSize>
@@ -112,8 +117,11 @@ const Eyebrow = styled.div`
 	color: ${(props) => props.theme.colors.muted};
 `;
 
-const EyebrowGlyph = styled.span`
+const EyebrowIcon = styled.span`
+	display: inline-flex;
+	align-items: center;
 	color: ${(props) => props.theme.colors.accent};
+	margin-right: 0.1ch;
 `;
 
 const Heading = styled.h2`
@@ -233,10 +241,18 @@ const ChildLink = styled(Link)`
 
 const ChildGlyph = styled.span<{ $type: 'file' | 'folder' }>`
 	color: ${(props) =>
-		props.$type === 'folder' ? props.theme.colors.accent : props.theme.colors.dim};
+		props.$type === 'folder' ? props.theme.colors.muted : props.theme.colors.dim};
 	font-weight: ${(props) => (props.$type === 'folder' ? 500 : 400)};
 	width: 1.5ch;
-	text-align: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: color 0.12s ease;
+
+	a:hover & {
+		color: ${(props) =>
+			props.$type === 'folder' ? props.theme.colors.accent : props.theme.colors.muted};
+	}
 `;
 
 const ChildName = styled.span`
