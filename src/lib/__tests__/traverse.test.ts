@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { TreeNode } from '../../types/tree';
-import { calculateSize, findNode, searchTree } from '../traverse';
+import { buildFlatIndex, calculateSize, findNode, searchIndex } from '../traverse';
 
 const tree: TreeNode = {
 	name: 'root',
@@ -42,21 +42,42 @@ describe('findNode', () => {
 	});
 });
 
-describe('searchTree', () => {
-	it('returns matches with their full paths from root', () => {
-		const results = searchTree(tree, 'button');
-
-		expect(results).toHaveLength(1);
-		expect(results[0]?.node.name).toBe('Button.tsx');
-		expect(results[0]?.path).toEqual(['src', 'components', 'Button.tsx']);
+describe('buildFlatIndex', () => {
+	it('flattens descendants (excluding the root) with full segments', () => {
+		const index = buildFlatIndex(tree);
+		expect(index.map((e) => e.name)).toEqual([
+			'src',
+			'index.ts',
+			'components',
+			'Button.tsx',
+			'package.json',
+			'empty',
+		]);
+		const buttonEntry = index.find((e) => e.name === 'Button.tsx');
+		expect(buttonEntry?.segments).toEqual(['src', 'components', 'Button.tsx']);
 	});
 
-	it('is case-insensitive', () => {
-		expect(searchTree(tree, 'BUTTON')).toHaveLength(1);
+	it('precomputes total size for folders and stores file size for files', () => {
+		const index = buildFlatIndex(tree);
+		expect(index.find((e) => e.name === 'src')?.size).toBe(300);
+		expect(index.find((e) => e.name === 'Button.tsx')?.size).toBe(200);
+	});
+});
+
+describe('searchIndex', () => {
+	it('returns case-insensitive substring matches', () => {
+		const index = buildFlatIndex(tree);
+		const hits = searchIndex(index, 'BUTTON');
+		expect(hits).toHaveLength(1);
+		expect(hits[0]?.name).toBe('Button.tsx');
 	});
 
 	it('returns an empty array when nothing matches', () => {
-		expect(searchTree(tree, 'xyz')).toEqual([]);
+		expect(searchIndex(buildFlatIndex(tree), 'xyz')).toEqual([]);
+	});
+
+	it('returns an empty array for a blank query', () => {
+		expect(searchIndex(buildFlatIndex(tree), '   ')).toEqual([]);
 	});
 });
 

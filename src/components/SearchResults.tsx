@@ -1,19 +1,15 @@
-import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { encodePath } from '../lib/path';
-import { searchTree } from '../lib/traverse';
-import type { TreeNode } from '../types/tree';
+import type { FlatEntry } from '../lib/traverse';
 import { HighlightedText } from './HighlightedText';
 
 interface Props {
-	tree: TreeNode;
+	results: readonly FlatEntry[];
 	query: string;
 }
 
-export function SearchResults({ tree, query }: Props) {
-	const results = useMemo(() => searchTree(tree, query), [tree, query]);
-
+export function SearchResults({ results, query }: Props) {
 	if (results.length === 0) {
 		return <Empty>Brak wyników dla &quot;{query}&quot;</Empty>;
 	}
@@ -24,17 +20,16 @@ export function SearchResults({ tree, query }: Props) {
 				{results.length} {results.length === 1 ? 'wynik' : 'wyników'} dla &quot;{query}&quot;
 			</Count>
 			<List>
-				{results.map((result) => {
-					const fullPath = `/${result.path.join('/')}`;
+				{results.map((entry) => {
 					const parentPath =
-						result.path.length > 1 ? `/${result.path.slice(0, -1).join('/')}` : '/';
+						entry.segments.length > 1 ? `/${entry.segments.slice(0, -1).join('/')}` : '/';
 					return (
-						<li key={fullPath}>
-							<ResultLink to={`/tree/${encodePath(result.path)}`}>
-								<Icon>{result.node.type === 'file' ? '📄' : '📁'}</Icon>
+						<li key={entry.segments.join('/')}>
+							<ResultLink to={`/tree/${encodePath([...entry.segments])}`}>
+								<Icon>{entry.type === 'file' ? '📄' : '📁'}</Icon>
 								<NameAndPath>
 									<Name>
-										<HighlightedText text={result.node.name} query={query} />
+										<HighlightedText text={entry.name} query={query} />
 									</Name>
 									<ParentPath>in {parentPath}</ParentPath>
 								</NameAndPath>

@@ -9,7 +9,7 @@ import { SearchResults } from '../components/SearchResults';
 import { TreeView } from '../components/TreeView';
 import { decodePath } from '../lib/path';
 import { loadTree } from '../lib/storage';
-import { findNode } from '../lib/traverse';
+import { buildFlatIndex, findNode, searchIndex } from '../lib/traverse';
 
 export function TreePage() {
 	const tree = useMemo(() => loadTree(), []);
@@ -18,6 +18,9 @@ export function TreePage() {
 	const splat = params['*'] ?? '';
 	const currentPath = decodePath(splat);
 	const query = rawQuery.trim();
+
+	const flatIndex = useMemo(() => (tree ? buildFlatIndex(tree) : []), [tree]);
+	const searchResults = useMemo(() => searchIndex(flatIndex, query), [flatIndex, query]);
 
 	if (!tree) {
 		return (
@@ -37,7 +40,7 @@ export function TreePage() {
 			</TopBar>
 			{query ? (
 				<SearchBody>
-					<SearchResults tree={tree} query={query} />
+					<SearchResults results={searchResults} query={query} />
 				</SearchBody>
 			) : (
 				<SplitBody>
