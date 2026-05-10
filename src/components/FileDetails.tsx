@@ -1,6 +1,6 @@
-import styled from 'styled-components';
-import { formatBytes } from '../lib/format';
 import type { FileNode } from '../types/tree';
+import { formatBytes } from '../lib/format';
+import styled from 'styled-components';
 
 interface Props {
 	node: FileNode;

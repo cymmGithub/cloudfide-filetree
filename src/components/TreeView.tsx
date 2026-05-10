@@ -1,7 +1,7 @@
-import styled from 'styled-components';
-import { useExpanded } from '../hooks/useExpanded';
 import type { TreeNode as TreeNodeType } from '../types/tree';
+import { useExpanded } from '../hooks/useExpanded';
 import { TreeNode } from './TreeNode';
+import styled from 'styled-components';
 
 interface Props {
 	tree: TreeNodeType;

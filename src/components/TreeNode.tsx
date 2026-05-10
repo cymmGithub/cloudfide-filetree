@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { encodePath } from '../lib/path';
 import type { TreeNode as TreeNodeType } from '../types/tree';
+import { Link } from 'react-router-dom';
+import { encodePath } from '../lib/path';
 import { FolderIcon } from './FolderIcon';
+import styled from 'styled-components';
 
 interface Props {
 	node: TreeNodeType;

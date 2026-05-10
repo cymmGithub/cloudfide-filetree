@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import { parseInput } from '../lib/parse';
 import { saveTree } from '../lib/storage';
+import styled from 'styled-components';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 

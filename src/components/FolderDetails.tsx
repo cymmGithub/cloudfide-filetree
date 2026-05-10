@@ -1,10 +1,10 @@
+import type { FolderNode } from '../types/tree';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 import { formatBytes } from '../lib/format';
 import { encodePath } from '../lib/path';
 import { calculateSize } from '../lib/traverse';
-import type { FolderNode } from '../types/tree';
 import { FolderIcon } from './FolderIcon';
+import styled from 'styled-components';
 
 interface Props {
 	node: FolderNode;

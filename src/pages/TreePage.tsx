@@ -1,7 +1,6 @@
 import { parseAsString, useQueryState } from 'nuqs';
 import { useDeferredValue, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { CopyPathButton } from '../components/CopyPathButton';
 import { FileDetails } from '../components/FileDetails';
@@ -12,6 +11,7 @@ import { TreeView } from '../components/TreeView';
 import { decodePath } from '../lib/path';
 import { loadTree } from '../lib/storage';
 import { buildFlatIndex, findNode, searchIndex } from '../lib/traverse';
+import styled, { keyframes } from 'styled-components';
 
 export function TreePage() {
 	const tree = useMemo(() => loadTree(), []);

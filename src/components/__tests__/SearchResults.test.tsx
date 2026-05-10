@@ -1,6 +1,6 @@
+import type { FlatEntry } from '../../lib/traverse';
 import { screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import type { FlatEntry } from '../../lib/traverse';
 import { renderWithProviders } from '../../test/render-utils';
 import { SearchResults } from '../SearchResults';
 

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { TreeNode } from '../types/tree';
+import { z } from 'zod';
 import { TreeNodeSchema } from './schema';
 
 export type ParseError = { kind: 'syntax'; message: string } | { kind: 'schema'; message: string };

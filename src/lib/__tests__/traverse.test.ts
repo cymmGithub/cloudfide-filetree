@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import type { TreeNode } from '../../types/tree';
+import { describe, it, expect } from 'vitest';
 import { buildFlatIndex, calculateSize, findNode, searchIndex } from '../traverse';
 
 const tree: TreeNode = {

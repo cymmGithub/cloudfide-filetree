@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { TreeNode } from '../types/tree';
+import { z } from 'zod';
 
 export const FileNodeSchema = z.strictObject({
 	name: z.string().min(1, 'Name cannot be empty'),

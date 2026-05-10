@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { encodePath } from '../lib/path';
 import type { FlatEntry } from '../lib/traverse';
+import { Link } from 'react-router-dom';
+import { encodePath } from '../lib/path';
 import { FolderIcon } from './FolderIcon';
 import { HighlightedText } from './HighlightedText';
+import styled from 'styled-components';
 
 const VISIBLE_LIMIT = 200;
 

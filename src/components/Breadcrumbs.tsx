@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 import { encodePath } from '../lib/path';
+import styled from 'styled-components';
 
 interface Props {
 	path: readonly string[];
