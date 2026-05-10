@@ -1,19 +1,100 @@
-import { useCallback, useMemo, useState } from 'react';
+import { json } from '@codemirror/lang-json';
+import { type Diagnostic, linter, lintGutter } from '@codemirror/lint';
+import { EditorView } from '@codemirror/view';
+import CodeMirror from '@uiw/react-codemirror';
+import { type ParseError, parse, printParseErrorCode } from 'jsonc-parser';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import { formatBytes } from '../lib/format';
 import { parseInput } from '../lib/parse';
 import { saveTree } from '../lib/storage';
+import { cmHighlight, cmTheme } from '../styles/cmTheme';
 import styled from 'styled-components';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 type LoadedFile = { name: string; size: number };
+type EnrichedError = ParseError & { line: number; col: number };
+
+const EDITOR_PLACEHOLDER = `{
+  "name": "root",
+  "type": "folder",
+  "children": [
+    {
+      "name": "src",
+      "type": "folder",
+      "children": [
+        { "name": "index.ts", "type": "file", "size": 1024 },
+        {
+          "name": "components",
+          "type": "folder",
+          "children": [
+            { "name": "Button.tsx", "type": "file", "size": 512 }
+          ]
+        }
+      ]
+    },
+    { "name": "package.json", "type": "file", "size": 300 }
+  ]
+}`;
 
 export function HomePage() {
 	const [inputValue, setInputValue] = useState('');
 	const [loadedFile, setLoadedFile] = useState<LoadedFile | null>(null);
+	const [errors, setErrors] = useState<EnrichedError[]>([]);
+	const [currentErrorIdx, setCurrentErrorIdx] = useState(0);
+	const editorViewRef = useRef<EditorView | null>(null);
 	const navigate = useNavigate();
+
+	const editorExtensions = useMemo(() => {
+		const jsonLinter = linter(
+			(view): Diagnostic[] => {
+				const text = view.state.doc.toString();
+				if (text.trim().length === 0) {
+					setErrors([]);
+					return [];
+				}
+				const found: ParseError[] = [];
+				parse(text, found, { allowTrailingComma: false });
+				const docLen = view.state.doc.length;
+				const enriched: EnrichedError[] = found.map((err) => {
+					const offset = Math.min(err.offset, docLen);
+					const line = view.state.doc.lineAt(offset);
+					return {
+						...err,
+						line: line.number,
+						col: offset - line.from + 1,
+					};
+				});
+				setErrors(enriched);
+				setCurrentErrorIdx((idx) => Math.min(idx, Math.max(0, enriched.length - 1)));
+				return enriched.map((err) => ({
+					from: Math.min(err.offset, docLen),
+					to: Math.min(err.offset + err.length, docLen),
+					severity: 'error',
+					message: printParseErrorCode(err.error),
+				}));
+			},
+			{ delay: 300 },
+		);
+		return [json(), cmHighlight, jsonLinter, lintGutter()];
+	}, []);
+
+	const goToError = (idx: number) => {
+		const view = editorViewRef.current;
+		const err = errors[idx];
+		if (!view || !err) return;
+		const docLen = view.state.doc.length;
+		const from = Math.min(err.offset, docLen);
+		const to = Math.min(err.offset + err.length, docLen);
+		view.dispatch({
+			selection: { anchor: from, head: to },
+			scrollIntoView: true,
+		});
+		view.focus();
+		setCurrentErrorIdx(idx);
+	};
 
 	const parseResult = useMemo(() => {
 		if (inputValue.trim().length === 0) return null;
@@ -26,16 +107,17 @@ export function HomePage() {
 		file
 			.text()
 			.then((text) => {
-				setInputValue(text);
+				let display = text;
+				try {
+					display = JSON.stringify(JSON.parse(text), null, 2);
+				} catch {
+					// Not valid JSON — show raw so the parser surfaces a real error
+				}
+				setInputValue(display);
 				setLoadedFile({ name: file.name, size: file.size });
 			})
 			.catch(console.error);
 	}, []);
-
-	const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		setInputValue(e.target.value);
-		if (loadedFile) setLoadedFile(null);
-	};
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop: handleDrop,
@@ -51,6 +133,7 @@ export function HomePage() {
 	};
 
 	const canLoad = parseResult?.ok === true;
+	const currentError = errors[currentErrorIdx];
 
 	return (
 		<Page>
@@ -100,18 +183,45 @@ export function HomePage() {
 							)}
 						</Dropzone>
 
-						{parseResult && !parseResult.ok && (
+						{errors.length > 0 && (
 							<>
 								<StatusLine>
 									<StatusPrompt>›</StatusPrompt>
-									<StatusValue $tone="err">json invalid — see report below</StatusValue>
+									<StatusValue>
+										json invalid — {errors.length} {errors.length === 1 ? 'error' : 'errors'}
+									</StatusValue>
 								</StatusLine>
 								<ReportBox role="alert">
 									<ReportHead>
 										<ReportTag>error</ReportTag>
-										<ReportPath>parse.report</ReportPath>
+										<NavGroup>
+											<NavButton
+												type="button"
+												onClick={() => goToError(currentErrorIdx - 1)}
+												disabled={currentErrorIdx <= 0}
+												aria-label="Previous error"
+											>
+												‹
+											</NavButton>
+											<NavCounter>
+												{currentErrorIdx + 1}/{errors.length}
+											</NavCounter>
+											<NavButton
+												type="button"
+												onClick={() => goToError(currentErrorIdx + 1)}
+												disabled={currentErrorIdx >= errors.length - 1}
+												aria-label="Next error"
+											>
+												›
+											</NavButton>
+										</NavGroup>
+										<ReportPath>
+											line {currentError?.line} col {currentError?.col}
+										</ReportPath>
 									</ReportHead>
-									<ReportBody>{parseResult.error.message}</ReportBody>
+									<ReportBody>
+										{currentError ? printParseErrorCode(currentError.error) : ''}
+									</ReportBody>
 								</ReportBox>
 							</>
 						)}
@@ -124,36 +234,28 @@ export function HomePage() {
 							<span>or paste below</span>
 						</SectionLabel>
 
-						<TextareaWrap>
-							<TextareaPrompt>›</TextareaPrompt>
-							<Textarea
+						<EditorWrap>
+							<CodeMirror
 								value={inputValue}
-								onChange={handleTextareaChange}
-								placeholder={`{
-  "name": "root",
-  "type": "folder",
-  "children": [
-    {
-      "name": "src",
-      "type": "folder",
-      "children": [
-        { "name": "index.ts", "type": "file", "size": 1024 },
-        {
-          "name": "components",
-          "type": "folder",
-          "children": [
-            { "name": "Button.tsx", "type": "file", "size": 512 }
-          ]
-        }
-      ]
-    },
-    { "name": "package.json", "type": "file", "size": 300 }
-  ]
-}`}
-								rows={22}
-								spellCheck={false}
+								onChange={(v) => {
+									setInputValue(v);
+									if (loadedFile) setLoadedFile(null);
+								}}
+								height="458px"
+								theme={cmTheme}
+								extensions={editorExtensions}
+								onCreateEditor={(view) => {
+									editorViewRef.current = view;
+								}}
+								basicSetup={{
+									lineNumbers: true,
+									foldGutter: false,
+									highlightActiveLine: false,
+									highlightActiveLineGutter: false,
+								}}
+								placeholder={EDITOR_PLACEHOLDER}
 							/>
-						</TextareaWrap>
+						</EditorWrap>
 
 						<LoadRow>
 							<LoadButton type="button" onClick={handleLoad} disabled={!canLoad} $ready={canLoad}>
@@ -192,6 +294,10 @@ const Sources = styled.div`
 	grid-template-columns: 1fr 1fr;
 	gap: ${(props) => props.theme.spacing.xl};
 	align-items: start;
+
+	> * {
+		min-width: 0;
+	}
 
 	@media (max-width: 768px) {
 		grid-template-columns: 1fr;
@@ -337,48 +443,25 @@ const DropMetaSep = styled.span`
 	color: ${(props) => props.theme.colors.border};
 `;
 
-const TextareaWrap = styled.div`
+const EditorWrap = styled.div`
 	position: relative;
-	display: grid;
-	grid-template-columns: auto 1fr;
-	background: ${(props) => props.theme.colors.surface};
 	border: ${(props) => props.theme.rule.hairline};
 	transition: border-color 0.15s ease;
+	overflow: hidden;
 
 	&:focus-within {
 		border-color: ${(props) => props.theme.colors.accent};
 	}
-`;
 
-const TextareaPrompt = styled.span`
-	padding: ${(props) => props.theme.spacing.md} 0 0 ${(props) => props.theme.spacing.md};
-	color: ${(props) => props.theme.colors.accent};
-	font-weight: 500;
-	user-select: none;
-`;
-
-const Textarea = styled.textarea`
-	width: 100%;
-	padding: ${(props) => props.theme.spacing.md};
-	padding-left: ${(props) => props.theme.spacing.sm};
-	border: none;
-	background: transparent;
-	color: ${(props) => props.theme.colors.text};
-	font-family: ${(props) => props.theme.fonts.mono};
-	font-size: ${(props) => props.theme.fontSize.sm};
-	resize: vertical;
-	line-height: 1.6;
-
-	&::placeholder {
-		color: ${(props) => props.theme.colors.dim};
+	.cm-editor {
+		font-family: ${(props) => props.theme.fonts.mono};
+		font-size: ${(props) => props.theme.fontSize.sm};
 	}
 
-	&:focus {
+	.cm-editor.cm-focused {
 		outline: none;
 	}
 `;
-
-type Tone = 'ok' | 'err';
 
 const StatusLine = styled.div`
 	display: flex;
@@ -392,9 +475,8 @@ const StatusPrompt = styled.span`
 	color: ${(props) => props.theme.colors.accent};
 `;
 
-const StatusValue = styled.span<{ $tone: Tone }>`
-	color: ${(props) =>
-		props.$tone === 'ok' ? props.theme.colors.success : props.theme.colors.error};
+const StatusValue = styled.span`
+	color: ${(props) => props.theme.colors.error};
 `;
 
 const ReportBox = styled.div`
@@ -406,6 +488,7 @@ const ReportBox = styled.div`
 
 const ReportHead = styled.div`
 	display: flex;
+	align-items: center;
 	gap: 0.8ch;
 	padding: ${(props) => props.theme.spacing.xs} ${(props) => props.theme.spacing.md};
 	border-bottom: 1px solid ${(props) => props.theme.colors.errorBorder};
@@ -421,6 +504,44 @@ const ReportTag = styled.span`
 
 const ReportPath = styled.span`
 	color: ${(props) => props.theme.colors.muted};
+	margin-left: auto;
+`;
+
+const NavGroup = styled.span`
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4ch;
+`;
+
+const NavButton = styled.button`
+	background: transparent;
+	color: ${(props) => props.theme.colors.muted};
+	border: 1px solid ${(props) => props.theme.colors.errorBorder};
+	padding: 0 0.5ch;
+	font-family: ${(props) => props.theme.fonts.mono};
+	font-size: ${(props) => props.theme.fontSize.sm};
+	line-height: 1.2;
+	cursor: pointer;
+	transition:
+		color 0.12s ease,
+		border-color 0.12s ease;
+
+	&:hover:not(:disabled) {
+		color: ${(props) => props.theme.colors.text};
+		border-color: ${(props) => props.theme.colors.error};
+	}
+
+	&:disabled {
+		color: ${(props) => props.theme.colors.dim};
+		cursor: not-allowed;
+		opacity: 0.5;
+	}
+`;
+
+const NavCounter = styled.span`
+	color: ${(props) => props.theme.colors.muted};
+	min-width: 4ch;
+	text-align: center;
 `;
 
 const ReportBody = styled.pre`
