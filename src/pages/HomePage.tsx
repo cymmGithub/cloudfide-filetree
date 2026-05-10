@@ -90,7 +90,11 @@ export function HomePage() {
 							<span>source</span>
 						</SectionLabel>
 
-						<DropSource loadedFile={loadedFile} onFileLoaded={handleFileLoaded} />
+						<DropSource
+							loadedFile={loadedFile}
+							hasErrors={parseResult !== null && !parseResult.ok}
+							onFileLoaded={handleFileLoaded}
+						/>
 
 						<ErrorReport errors={errors} currentIdx={currentErrorIdx} onNavigate={goToError} />
 					</Section>

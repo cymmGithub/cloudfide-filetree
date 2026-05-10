@@ -9,10 +9,11 @@ export type LoadedFile = { name: string; size: number };
 
 type Props = {
 	loadedFile: LoadedFile | null;
+	hasErrors?: boolean;
 	onFileLoaded: (text: string, file: LoadedFile) => void;
 };
 
-export function DropSource({ loadedFile, onFileLoaded }: Props) {
+export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Props) {
 	const handleDrop = useCallback(
 		(files: File[]) => {
 			const file = files[0];
@@ -33,17 +34,22 @@ export function DropSource({ loadedFile, onFileLoaded }: Props) {
 	});
 
 	return (
-		<Dropzone {...getRootProps()} $active={isDragActive} $loaded={loadedFile !== null}>
+		<Dropzone
+			{...getRootProps()}
+			$active={isDragActive}
+			$loaded={loadedFile !== null}
+			$invalid={loadedFile !== null && hasErrors}
+		>
 			<input {...getInputProps()} />
 			{loadedFile ? (
 				<>
 					<DropMain>
-						<LoadedCheck>✓</LoadedCheck> {loadedFile.name}
+						<LoadedMark $invalid={hasErrors}>{hasErrors ? '✗' : '✓'}</LoadedMark> {loadedFile.name}
 					</DropMain>
 					<DropMeta>
 						<span>{formatBytes(loadedFile.size)}</span>
 						<DropMetaSep>·</DropMetaSep>
-						<span>loaded</span>
+						<span>{hasErrors ? 'invalid' : 'loaded'}</span>
 						<DropMetaSep>·</DropMetaSep>
 						<span>click to replace</span>
 					</DropMeta>
@@ -66,16 +72,18 @@ export function DropSource({ loadedFile, onFileLoaded }: Props) {
 	);
 }
 
-const Dropzone = styled.div<{ $active: boolean; $loaded: boolean }>`
+const Dropzone = styled.div<{ $active: boolean; $loaded: boolean; $invalid: boolean }>`
 	position: relative;
 	padding: ${(props) => props.theme.spacing.xl};
 	background: ${(props) => {
+		if (props.$invalid) return props.theme.colors.errorBg;
 		if (props.$loaded) return props.theme.colors.successBg;
 		if (props.$active) return props.theme.colors.accentSoft;
 		return props.theme.colors.surface;
 	}};
 	border: 1px ${(props) => (props.$loaded ? 'solid' : 'dashed')}
 		${(props) => {
+			if (props.$invalid) return props.theme.colors.error;
 			if (props.$loaded) return props.theme.colors.success;
 			if (props.$active) return props.theme.colors.accent;
 			return props.theme.colors.borderStrong;
@@ -98,6 +106,7 @@ const Dropzone = styled.div<{ $active: boolean; $loaded: boolean }>`
 		width: 12px;
 		height: 12px;
 		border-color: ${(props) => {
+			if (props.$invalid) return props.theme.colors.error;
 			if (props.$loaded) return props.theme.colors.success;
 			if (props.$active) return props.theme.colors.accent;
 			return props.theme.colors.borderStrong;
@@ -119,19 +128,25 @@ const Dropzone = styled.div<{ $active: boolean; $loaded: boolean }>`
 	}
 
 	&:hover {
-		border-color: ${(props) =>
-			props.$loaded ? props.theme.colors.success : props.theme.colors.accent};
+		border-color: ${(props) => {
+			if (props.$invalid) return props.theme.colors.error;
+			if (props.$loaded) return props.theme.colors.success;
+			return props.theme.colors.accent;
+		}};
 	}
 
 	&:hover::before,
 	&:hover::after {
-		border-color: ${(props) =>
-			props.$loaded ? props.theme.colors.success : props.theme.colors.accent};
+		border-color: ${(props) => {
+			if (props.$invalid) return props.theme.colors.error;
+			if (props.$loaded) return props.theme.colors.success;
+			return props.theme.colors.accent;
+		}};
 	}
 `;
 
-const LoadedCheck = styled.span`
-	color: ${(props) => props.theme.colors.success};
+const LoadedMark = styled.span<{ $invalid: boolean }>`
+	color: ${(props) => (props.$invalid ? props.theme.colors.error : props.theme.colors.success)};
 	font-weight: 600;
 	margin-right: 0.4ch;
 `;
