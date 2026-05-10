@@ -50,13 +50,13 @@ describe('ErrorReport', () => {
 		expect(screen.getByRole('button', { name: /previous error/i })).toBeDisabled();
 
 		await user.click(screen.getByRole('button', { name: /next error/i }));
-		expect(onNavigate).toHaveBeenCalledWith(1);
+		expect(onNavigate).toHaveBeenLastCalledWith(1);
 
 		rerender(<ErrorReport errors={errors} currentIdx={2} onNavigate={onNavigate} />);
 		expect(screen.getByText('3/3')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /next error/i })).toBeDisabled();
 
 		await user.click(screen.getByRole('button', { name: /previous error/i }));
-		expect(onNavigate).toHaveBeenCalledWith(1);
+		expect(onNavigate).toHaveBeenLastCalledWith(1);
 	});
 });
