@@ -8,7 +8,9 @@ export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptio
 	return render(ui, {
 		wrapper: ({ children }) => (
 			<ThemeProvider theme={theme}>
-				<BrowserRouter>{children}</BrowserRouter>
+				<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+					{children}
+				</BrowserRouter>
 			</ThemeProvider>
 		),
 		...options,

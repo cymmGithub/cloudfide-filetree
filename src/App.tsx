@@ -10,7 +10,7 @@ function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<GlobalStyles />
-			<BrowserRouter>
+			<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 				<NuqsAdapter>
 					<Routes>
 						<Route path="/" element={<HomePage />} />
