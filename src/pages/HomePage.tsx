@@ -111,7 +111,7 @@ export function HomePage() {
 							value={inputValue}
 							onChange={(v) => {
 								setInputValue(v);
-								if (loadedFile) setLoadedFile(null);
+								if (v.length === 0 && loadedFile) setLoadedFile(null);
 							}}
 							onErrorsChange={handleErrorsChange}
 							placeholder={EDITOR_PLACEHOLDER}

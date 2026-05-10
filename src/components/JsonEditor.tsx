@@ -67,7 +67,7 @@ export const JsonEditor = forwardRef<JsonEditorHandle, Props>(function JsonEdito
 					message: printParseErrorCode(err.error),
 				}));
 			},
-			{ delay: 300 },
+			{ delay: 150 },
 		);
 		return [json(), cmHighlight, jsonLinter, lintGutter()];
 	}, [onErrorsChange]);

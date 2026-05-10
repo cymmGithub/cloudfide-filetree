@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { formatBytes } from '../lib/format';
+import { JsonFileIcon } from './JsonFileIcon';
 import styled from 'styled-components';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -56,6 +57,9 @@ export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Prop
 				</>
 			) : (
 				<>
+					<IconBox $active={isDragActive}>
+						<JsonFileIcon size={52} />
+					</IconBox>
 					<DropMain>
 						{isDragActive ? 'release to read' : 'drop a json file here, or click to choose'}
 					</DropMain>
@@ -74,7 +78,7 @@ export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Prop
 
 const Dropzone = styled.div<{ $active: boolean; $loaded: boolean; $invalid: boolean }>`
 	position: relative;
-	padding: ${(props) => props.theme.spacing.xl};
+	padding: ${(props) => props.theme.spacing.xxl} ${(props) => props.theme.spacing.xl};
 	background: ${(props) => {
 		if (props.$invalid) return props.theme.colors.errorBg;
 		if (props.$loaded) return props.theme.colors.successBg;
@@ -96,7 +100,7 @@ const Dropzone = styled.div<{ $active: boolean; $loaded: boolean; $invalid: bool
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: ${(props) => props.theme.spacing.sm};
+	gap: ${(props) => props.theme.spacing.md};
 	text-align: center;
 
 	&::before,
@@ -145,6 +149,13 @@ const Dropzone = styled.div<{ $active: boolean; $loaded: boolean; $invalid: bool
 	}
 `;
 
+const IconBox = styled.div<{ $active: boolean }>`
+	display: flex;
+	color: ${(props) =>
+		props.$active ? props.theme.colors.accent : props.theme.colors.borderStrong};
+	transition: color 0.2s ease;
+`;
+
 const LoadedMark = styled.span<{ $invalid: boolean }>`
 	color: ${(props) => (props.$invalid ? props.theme.colors.error : props.theme.colors.success)};
 	font-weight: 600;
@@ -153,12 +164,12 @@ const LoadedMark = styled.span<{ $invalid: boolean }>`
 
 const DropMain = styled.div`
 	color: ${(props) => props.theme.colors.text};
-	font-size: ${(props) => props.theme.fontSize.md};
+	font-size: ${(props) => props.theme.fontSize.lg};
 `;
 
 const DropMeta = styled.div`
 	color: ${(props) => props.theme.colors.dim};
-	font-size: ${(props) => props.theme.fontSize.micro};
+	font-size: ${(props) => props.theme.fontSize.xs};
 	letter-spacing: ${(props) => props.theme.tracking.wider};
 	text-transform: uppercase;
 	display: inline-flex;
