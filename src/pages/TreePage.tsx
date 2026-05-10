@@ -55,9 +55,12 @@ export function TreePage() {
 		<Layout>
 			<TopBar>
 				<TopBarLeft to="/" aria-label="Back to home">
-					<Brand>~/filetree</Brand>
-					<TopSep>·</TopSep>
-					<BrandDim>inspector</BrandDim>
+					<BrandRow>
+						<Brand>filetree</Brand>
+						<TopSep>·</TopSep>
+						<BrandDim>inspector</BrandDim>
+					</BrandRow>
+					<BrandRule />
 				</TopBarLeft>
 				<TopBarMid>
 					<SearchInput />
@@ -171,16 +174,34 @@ const TopBar = styled.div`
 
 const TopBarLeft = styled(Link)`
 	display: inline-flex;
-	align-items: center;
-	gap: 0.8ch;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: ${(props) => props.theme.spacing.xs};
 	color: inherit;
 	text-decoration: none;
 	cursor: pointer;
+	font-size: ${(props) => props.theme.fontSize.lg};
+	letter-spacing: ${(props) => props.theme.tracking.tight};
+	text-transform: none;
+	line-height: 1;
 
 	&:hover {
 		text-decoration: none;
 		box-shadow: none;
 	}
+`;
+
+const BrandRow = styled.span`
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.6ch;
+`;
+
+const BrandRule = styled.span`
+	display: block;
+	height: 1px;
+	width: 100%;
+	background: ${(props) => props.theme.colors.dim};
 `;
 
 const TopBarMid = styled.div`
@@ -195,9 +216,14 @@ const TopBarRight = styled.div`
 `;
 
 const Brand = styled.span`
+	display: inline-block;
 	color: ${(props) => props.theme.colors.text};
 	font-weight: 600;
 	transition: color 0.12s ease;
+
+	&::first-letter {
+		color: ${(props) => props.theme.colors.accent};
+	}
 
 	${TopBarLeft}:hover & {
 		color: ${(props) => props.theme.colors.accent};
@@ -205,7 +231,13 @@ const Brand = styled.span`
 `;
 
 const BrandDim = styled.span`
+	display: inline-block;
 	color: ${(props) => props.theme.colors.muted};
+	font-weight: 300;
+
+	&::first-letter {
+		color: ${(props) => props.theme.colors.accent};
+	}
 `;
 
 const TopSep = styled.span`

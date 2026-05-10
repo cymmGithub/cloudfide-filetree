@@ -169,6 +169,7 @@ const Title = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 0;
+	width: fit-content;
 `;
 
 const TitleLine = styled.h1<{ $thin?: boolean }>`
@@ -187,9 +188,9 @@ const TitleLine = styled.h1<{ $thin?: boolean }>`
 const TitleRule = styled.span`
 	display: block;
 	height: 1px;
-	background: ${(props) => props.theme.colors.accent};
+	background: ${(props) => props.theme.colors.dim};
 	margin-top: ${(props) => props.theme.spacing.md};
-	width: 64px;
+	width: 100%;
 `;
 
 const Section = styled.section`
