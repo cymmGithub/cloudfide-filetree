@@ -11,15 +11,13 @@ export function SearchInput() {
 
 	return (
 		<Wrap $active={value.length > 0}>
-			<Prompt>›</Prompt>
 			<Input
 				type="search"
-				placeholder="search for files | folders.."
+				placeholder="search for files || folders..."
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
 				spellCheck={false}
 			/>
-			{value.length === 0 && <Hint>type to grep</Hint>}
 		</Wrap>
 	);
 }
@@ -38,12 +36,6 @@ const Wrap = styled.div<{ $active: boolean }>`
 	&:focus-within {
 		border-color: ${(props) => props.theme.colors.accent};
 	}
-`;
-
-const Prompt = styled.span`
-	color: ${(props) => props.theme.colors.accent};
-	font-weight: 500;
-	user-select: none;
 `;
 
 const Input = styled.input`
@@ -68,12 +60,4 @@ const Input = styled.input`
 	&::-webkit-search-cancel-button {
 		appearance: none;
 	}
-`;
-
-const Hint = styled.span`
-	color: ${(props) => props.theme.colors.dim};
-	font-size: ${(props) => props.theme.fontSize.micro};
-	letter-spacing: ${(props) => props.theme.tracking.wider};
-	text-transform: uppercase;
-	white-space: nowrap;
 `;

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { parseInput } from '../lib/parse';
 import { saveTree } from '../lib/storage';
 
@@ -37,24 +37,22 @@ export function HomePage() {
 
 	const canLoad = parseResult?.ok === true;
 
-	const statusLine = !inputValue.trim()
-		? { tone: 'idle' as const, text: 'awaiting input' }
-		: parseResult?.ok
+	const statusLine = parseResult
+		? parseResult.ok
 			? { tone: 'ok' as const, text: 'json valid — ready to load' }
-			: { tone: 'err' as const, text: 'json invalid — see report below' };
+			: { tone: 'err' as const, text: 'json invalid — see report below' }
+		: null;
 
 	return (
 		<Page>
 			<Stage>
 				<Title>
-					<TitleLine $delay={0}>filetree</TitleLine>
-					<TitleLine $delay={80} $thin>
-						inspector
-					</TitleLine>
+					<TitleLine>filetree</TitleLine>
+					<TitleLine $thin>inspector</TitleLine>
 					<TitleRule />
 				</Title>
 
-				<Section $delay={120}>
+				<Section>
 					<SectionLabel>
 						<SectionNum>01</SectionNum>
 						<span>/</span>
@@ -76,7 +74,7 @@ export function HomePage() {
 					</Dropzone>
 				</Section>
 
-				<Section $delay={180}>
+				<Section>
 					<SectionLabel>
 						<SectionNum>02</SectionNum>
 						<span>/</span>
@@ -95,20 +93,13 @@ export function HomePage() {
 					</TextareaWrap>
 				</Section>
 
-				<Section $delay={240}>
-					<SectionLabel>
-						<SectionNum>03</SectionNum>
-						<span>/</span>
-						<span>validate &amp; load</span>
-					</SectionLabel>
-
-					<StatusLine $tone={statusLine.tone}>
-						<StatusPrompt>›</StatusPrompt>
-						<StatusKey>status</StatusKey>
-						<StatusBar>│</StatusBar>
-						<StatusValue $tone={statusLine.tone}>{statusLine.text}</StatusValue>
-						{statusLine.tone === 'idle' && <Cursor>▍</Cursor>}
-					</StatusLine>
+				<Section>
+					{statusLine && (
+						<StatusLine $tone={statusLine.tone}>
+							<StatusPrompt>›</StatusPrompt>
+							<StatusValue $tone={statusLine.tone}>{statusLine.text}</StatusValue>
+						</StatusLine>
+					)}
 
 					{parseResult && !parseResult.ok && (
 						<ReportBox role="alert">
@@ -127,26 +118,12 @@ export function HomePage() {
 								<LoadArrow>→</LoadArrow>
 							</LoadButtonInner>
 						</LoadButton>
-						<LoadHint>
-							{canLoad ? (
-								<>
-									<HintCmd>↵</HintCmd> press to enter the inspector
-								</>
-							) : (
-								<>locked until validation passes</>
-							)}
-						</LoadHint>
 					</LoadRow>
 				</Section>
 			</Stage>
 		</Page>
 	);
 }
-
-const blink = keyframes`
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-`;
 
 const Page = styled.div`
 	max-width: 720px;
@@ -172,15 +149,13 @@ const Title = styled.div`
 	gap: 0;
 `;
 
-const TitleLine = styled.h1<{ $delay: number; $thin?: boolean }>`
+const TitleLine = styled.h1<{ $thin?: boolean }>`
 	margin: 0;
 	font-size: ${(props) => props.theme.fontSize.display};
 	font-weight: ${(props) => (props.$thin ? 300 : 600)};
 	letter-spacing: ${(props) => props.theme.tracking.tight};
 	line-height: 1;
 	color: ${(props) => (props.$thin ? props.theme.colors.muted : props.theme.colors.text)};
-	opacity: 0;
-	animation: rise-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) ${(props) => props.$delay}ms forwards;
 
 	&::first-letter {
 		color: ${(props) => props.theme.colors.accent};
@@ -193,15 +168,12 @@ const TitleRule = styled.span`
 	background: ${(props) => props.theme.colors.accent};
 	margin-top: ${(props) => props.theme.spacing.md};
 	width: 64px;
-	transform-origin: left center;
-	animation: hairline-grow 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 240ms backwards;
 `;
 
-const Section = styled.section<{ $delay: number }>`
+const Section = styled.section`
 	display: flex;
 	flex-direction: column;
 	gap: ${(props) => props.theme.spacing.md};
-	animation: rise-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) ${(props) => props.$delay}ms backwards;
 `;
 
 const SectionLabel = styled.div`
@@ -332,7 +304,7 @@ const Textarea = styled.textarea`
 	}
 `;
 
-type Tone = 'idle' | 'ok' | 'err';
+type Tone = 'ok' | 'err';
 
 const StatusLine = styled.div<{ $tone: Tone }>`
 	display: flex;
@@ -340,35 +312,16 @@ const StatusLine = styled.div<{ $tone: Tone }>`
 	gap: 0.8ch;
 	padding: ${(props) => props.theme.spacing.sm} 0;
 	font-size: ${(props) => props.theme.fontSize.sm};
+	margin-top: -3rem;
 `;
 
 const StatusPrompt = styled.span`
 	color: ${(props) => props.theme.colors.accent};
 `;
 
-const StatusKey = styled.span`
-	color: ${(props) => props.theme.colors.muted};
-	text-transform: uppercase;
-	letter-spacing: ${(props) => props.theme.tracking.wider};
-	font-size: ${(props) => props.theme.fontSize.micro};
-`;
-
-const StatusBar = styled.span`
-	color: ${(props) => props.theme.colors.border};
-`;
-
 const StatusValue = styled.span<{ $tone: Tone }>`
 	color: ${(props) =>
-		props.$tone === 'ok'
-			? props.theme.colors.success
-			: props.$tone === 'err'
-				? props.theme.colors.error
-				: props.theme.colors.text};
-`;
-
-const Cursor = styled.span`
-	color: ${(props) => props.theme.colors.accent};
-	animation: ${blink} 1.06s step-end infinite;
+		props.$tone === 'ok' ? props.theme.colors.success : props.theme.colors.error};
 `;
 
 const ReportBox = styled.div`
@@ -455,21 +408,4 @@ const LoadArrow = styled.span`
 	${LoadButton}:hover:not(:disabled) & {
 		transform: translateX(3px);
 	}
-`;
-
-const LoadHint = styled.span`
-	color: ${(props) => props.theme.colors.dim};
-	font-size: ${(props) => props.theme.fontSize.micro};
-	letter-spacing: ${(props) => props.theme.tracking.wider};
-	text-transform: uppercase;
-	display: inline-flex;
-	gap: 0.6ch;
-	align-items: center;
-`;
-
-const HintCmd = styled.span`
-	color: ${(props) => props.theme.colors.accent};
-	border: 1px solid ${(props) => props.theme.colors.border};
-	padding: 0 0.5ch;
-	font-size: ${(props) => props.theme.fontSize.micro};
 `;
