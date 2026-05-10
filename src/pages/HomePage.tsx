@@ -1,14 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
+import { formatBytes } from '../lib/format';
 import { parseInput } from '../lib/parse';
 import { saveTree } from '../lib/storage';
 import styled from 'styled-components';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+type LoadedFile = { name: string; size: number };
+
 export function HomePage() {
 	const [inputValue, setInputValue] = useState('');
+	const [loadedFile, setLoadedFile] = useState<LoadedFile | null>(null);
 	const navigate = useNavigate();
 
 	const parseResult = useMemo(() => {
@@ -19,8 +23,19 @@ export function HomePage() {
 	const handleDrop = useCallback((files: File[]) => {
 		const file = files[0];
 		if (!file) return;
-		file.text().then(setInputValue).catch(console.error);
+		file
+			.text()
+			.then((text) => {
+				setInputValue(text);
+				setLoadedFile({ name: file.name, size: file.size });
+			})
+			.catch(console.error);
 	}, []);
+
+	const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setInputValue(e.target.value);
+		if (loadedFile) setLoadedFile(null);
+	};
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop: handleDrop,
@@ -37,12 +52,6 @@ export function HomePage() {
 
 	const canLoad = parseResult?.ok === true;
 
-	const statusLine = parseResult
-		? parseResult.ok
-			? { tone: 'ok' as const, text: 'json valid — ready to load' }
-			: { tone: 'err' as const, text: 'json invalid — see report below' }
-		: null;
-
 	return (
 		<Page>
 			<Stage>
@@ -52,81 +61,117 @@ export function HomePage() {
 					<TitleRule />
 				</Title>
 
-				<Section>
-					<SectionLabel>
-						<SectionNum>01</SectionNum>
-						<span>/</span>
-						<span>source</span>
-					</SectionLabel>
+				<Sources>
+					<Section>
+						<SectionLabel>
+							<SectionNum>01</SectionNum>
+							<span>/</span>
+							<span>source</span>
+						</SectionLabel>
 
-					<Dropzone {...getRootProps()} $active={isDragActive}>
-						<input {...getInputProps()} />
-						<DropMain>
-							{isDragActive ? 'release to read' : 'drop a json file here, or click to choose'}
-						</DropMain>
-						<DropMeta>
-							<span>application/json</span>
-							<DropMetaSep>·</DropMetaSep>
-							<span>≤ 5 MB</span>
-							<DropMetaSep>·</DropMetaSep>
-							<span>single file</span>
-						</DropMeta>
-					</Dropzone>
-				</Section>
+						<Dropzone {...getRootProps()} $active={isDragActive} $loaded={loadedFile !== null}>
+							<input {...getInputProps()} />
+							{loadedFile ? (
+								<>
+									<DropMain>
+										<LoadedCheck>✓</LoadedCheck> {loadedFile.name}
+									</DropMain>
+									<DropMeta>
+										<span>{formatBytes(loadedFile.size)}</span>
+										<DropMetaSep>·</DropMetaSep>
+										<span>loaded</span>
+										<DropMetaSep>·</DropMetaSep>
+										<span>click to replace</span>
+									</DropMeta>
+								</>
+							) : (
+								<>
+									<DropMain>
+										{isDragActive ? 'release to read' : 'drop a json file here, or click to choose'}
+									</DropMain>
+									<DropMeta>
+										<span>application/json</span>
+										<DropMetaSep>·</DropMetaSep>
+										<span>≤ 5 MB</span>
+										<DropMetaSep>·</DropMetaSep>
+										<span>single file</span>
+									</DropMeta>
+								</>
+							)}
+						</Dropzone>
 
-				<Section>
-					<SectionLabel>
-						<SectionNum>02</SectionNum>
-						<span>/</span>
-						<span>or paste below</span>
-					</SectionLabel>
+						{parseResult && !parseResult.ok && (
+							<>
+								<StatusLine>
+									<StatusPrompt>›</StatusPrompt>
+									<StatusValue $tone="err">json invalid — see report below</StatusValue>
+								</StatusLine>
+								<ReportBox role="alert">
+									<ReportHead>
+										<ReportTag>error</ReportTag>
+										<ReportPath>parse.report</ReportPath>
+									</ReportHead>
+									<ReportBody>{parseResult.error.message}</ReportBody>
+								</ReportBox>
+							</>
+						)}
+					</Section>
 
-					<TextareaWrap>
-						<TextareaPrompt>›</TextareaPrompt>
-						<Textarea
-							value={inputValue}
-							onChange={(e) => setInputValue(e.target.value)}
-							placeholder={'{"name":"root","type":"folder","children":[ ... ]}'}
-							rows={10}
-							spellCheck={false}
-						/>
-					</TextareaWrap>
-				</Section>
+					<Section>
+						<SectionLabel>
+							<SectionNum>02</SectionNum>
+							<span>/</span>
+							<span>or paste below</span>
+						</SectionLabel>
 
-				<Section>
-					{statusLine && (
-						<StatusLine $tone={statusLine.tone}>
-							<StatusPrompt>›</StatusPrompt>
-							<StatusValue $tone={statusLine.tone}>{statusLine.text}</StatusValue>
-						</StatusLine>
-					)}
+						<TextareaWrap>
+							<TextareaPrompt>›</TextareaPrompt>
+							<Textarea
+								value={inputValue}
+								onChange={handleTextareaChange}
+								placeholder={`{
+  "name": "root",
+  "type": "folder",
+  "children": [
+    {
+      "name": "src",
+      "type": "folder",
+      "children": [
+        { "name": "index.ts", "type": "file", "size": 1024 },
+        {
+          "name": "components",
+          "type": "folder",
+          "children": [
+            { "name": "Button.tsx", "type": "file", "size": 512 }
+          ]
+        }
+      ]
+    },
+    { "name": "package.json", "type": "file", "size": 300 }
+  ]
+}`}
+								rows={22}
+								spellCheck={false}
+							/>
+						</TextareaWrap>
 
-					{parseResult && !parseResult.ok && (
-						<ReportBox role="alert">
-							<ReportHead>
-								<ReportTag>error</ReportTag>
-								<ReportPath>parse.report</ReportPath>
-							</ReportHead>
-							<ReportBody>{parseResult.error.message}</ReportBody>
-						</ReportBox>
-					)}
-
-					<LoadRow>
-						<LoadButton type="button" onClick={handleLoad} disabled={!canLoad} $ready={canLoad}>
-							<LoadButtonInner>
-								<span>load tree</span>
-								<LoadArrow>→</LoadArrow>
-							</LoadButtonInner>
-						</LoadButton>
-					</LoadRow>
-				</Section>
+						<LoadRow>
+							<LoadButton type="button" onClick={handleLoad} disabled={!canLoad} $ready={canLoad}>
+								<LoadButtonInner>
+									<span>load tree</span>
+									<LoadArrow>→</LoadArrow>
+								</LoadButtonInner>
+							</LoadButton>
+						</LoadRow>
+					</Section>
+				</Sources>
 			</Stage>
 		</Page>
 	);
 }
 
 const Page = styled.div`
-	max-width: 720px;
+	max-width: 1080px;
 	margin: 0 auto;
 	padding: ${(props) => props.theme.spacing.xl} ${(props) => props.theme.spacing.lg}
 		${(props) => props.theme.spacing.xxxl};
@@ -140,6 +185,17 @@ const Stage = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: ${(props) => props.theme.spacing.xxl};
+`;
+
+const Sources = styled.div`
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: ${(props) => props.theme.spacing.xl};
+	align-items: start;
+
+	@media (max-width: 768px) {
+		grid-template-columns: 1fr;
+	}
 `;
 
 const Title = styled.div`
@@ -193,13 +249,20 @@ const SectionNum = styled.span`
 	font-weight: 500;
 `;
 
-const Dropzone = styled.div<{ $active: boolean }>`
+const Dropzone = styled.div<{ $active: boolean; $loaded: boolean }>`
 	position: relative;
 	padding: ${(props) => props.theme.spacing.xl};
-	background: ${(props) =>
-		props.$active ? props.theme.colors.accentSoft : props.theme.colors.surface};
-	border: 1px dashed
-		${(props) => (props.$active ? props.theme.colors.accent : props.theme.colors.borderStrong)};
+	background: ${(props) => {
+		if (props.$loaded) return props.theme.colors.successBg;
+		if (props.$active) return props.theme.colors.accentSoft;
+		return props.theme.colors.surface;
+	}};
+	border: 1px ${(props) => (props.$loaded ? 'solid' : 'dashed')}
+		${(props) => {
+			if (props.$loaded) return props.theme.colors.success;
+			if (props.$active) return props.theme.colors.accent;
+			return props.theme.colors.borderStrong;
+		}};
 	cursor: pointer;
 	transition:
 		border-color 0.2s ease,
@@ -217,8 +280,11 @@ const Dropzone = styled.div<{ $active: boolean }>`
 		position: absolute;
 		width: 12px;
 		height: 12px;
-		border-color: ${(props) =>
-			props.$active ? props.theme.colors.accent : props.theme.colors.borderStrong};
+		border-color: ${(props) => {
+			if (props.$loaded) return props.theme.colors.success;
+			if (props.$active) return props.theme.colors.accent;
+			return props.theme.colors.borderStrong;
+		}};
 		border-style: solid;
 		transition: border-color 0.2s ease;
 	}
@@ -236,13 +302,21 @@ const Dropzone = styled.div<{ $active: boolean }>`
 	}
 
 	&:hover {
-		border-color: ${(props) => props.theme.colors.accent};
+		border-color: ${(props) =>
+			props.$loaded ? props.theme.colors.success : props.theme.colors.accent};
 	}
 
 	&:hover::before,
 	&:hover::after {
-		border-color: ${(props) => props.theme.colors.accent};
+		border-color: ${(props) =>
+			props.$loaded ? props.theme.colors.success : props.theme.colors.accent};
 	}
+`;
+
+const LoadedCheck = styled.span`
+	color: ${(props) => props.theme.colors.success};
+	font-weight: 600;
+	margin-right: 0.4ch;
 `;
 
 const DropMain = styled.div`
@@ -306,13 +380,12 @@ const Textarea = styled.textarea`
 
 type Tone = 'ok' | 'err';
 
-const StatusLine = styled.div<{ $tone: Tone }>`
+const StatusLine = styled.div`
 	display: flex;
 	align-items: center;
 	gap: 0.8ch;
 	padding: ${(props) => props.theme.spacing.sm} 0;
 	font-size: ${(props) => props.theme.fontSize.sm};
-	margin-top: -3rem;
 `;
 
 const StatusPrompt = styled.span`
