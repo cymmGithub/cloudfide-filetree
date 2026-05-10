@@ -23,8 +23,7 @@ export function SearchInput() {
 }
 
 const Wrap = styled.div<{ $active: boolean }>`
-	display: grid;
-	grid-template-columns: auto 1fr auto;
+	display: flex;
 	align-items: center;
 	gap: 0.6ch;
 	padding: ${(props) => props.theme.spacing.xs} ${(props) => props.theme.spacing.sm};
@@ -39,7 +38,8 @@ const Wrap = styled.div<{ $active: boolean }>`
 `;
 
 const Input = styled.input`
-	width: 100%;
+	flex: 1;
+	min-width: 0;
 	padding: 0;
 	border: none;
 	background: transparent;

@@ -129,10 +129,11 @@ const NodeLink = styled(Link)<{ $current: boolean }>`
 const Tick = styled.span<{ $current: boolean }>`
 	display: block;
 	width: 2px;
+	height: 0.9rem;
 	flex-shrink: 0;
 	background: ${(props) => (props.$current ? props.theme.colors.accent : 'transparent')};
 	margin-right: 0.6ch;
-	align-self: stretch;
+	align-self: center;
 	transition: background 0.12s ease;
 `;
 

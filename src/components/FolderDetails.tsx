@@ -112,6 +112,7 @@ const Eyebrow = styled.div`
 	gap: 0.6ch;
 	align-items: center;
 	font-size: ${(props) => props.theme.fontSize.micro};
+	line-height: 1;
 	letter-spacing: ${(props) => props.theme.tracking.widest};
 	text-transform: uppercase;
 	color: ${(props) => props.theme.colors.muted};
