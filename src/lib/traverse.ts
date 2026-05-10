@@ -36,20 +36,34 @@ export function calculateSize(tree: TreeNode): number {
 export function buildFlatIndex(root: TreeNode): FlatEntry[] {
 	const out: FlatEntry[] = [];
 
-	function walk(node: TreeNode, segments: string[]) {
+	function walk(node: TreeNode, segments: string[]): number {
+		let placeholder: FlatEntry | null = null;
+		let slot = -1;
 		if (segments.length > 0) {
-			out.push({
+			placeholder = {
 				name: node.name,
 				segments: [...segments],
 				type: node.type,
-				size: calculateSize(node),
-			});
+				size: 0,
+			};
+			slot = out.length;
+			out.push(placeholder);
 		}
-		if (node.type === 'folder') {
+
+		let size: number;
+		if (node.type === 'file') {
+			size = node.size;
+		} else {
+			size = 0;
 			for (const child of node.children) {
-				walk(child, [...segments, child.name]);
+				size += walk(child, [...segments, child.name]);
 			}
 		}
+
+		if (placeholder !== null) {
+			out[slot] = { ...placeholder, size };
+		}
+		return size;
 	}
 
 	walk(root, []);
