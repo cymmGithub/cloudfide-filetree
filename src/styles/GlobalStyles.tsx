@@ -81,6 +81,10 @@ export const GlobalStyles = createGlobalStyle`
     background: ${(props) => props.theme.colors.borderStrong};
   }
 
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   button {
     font-family: inherit;
     font-size: inherit;
