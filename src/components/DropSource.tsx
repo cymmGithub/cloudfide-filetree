@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useCallback, useState } from 'react';
+import { useDropzone, type FileRejection } from 'react-dropzone';
 import { formatBytes } from '../lib/format';
 import { JsonFileIcon } from './JsonFileIcon';
 import styled from 'styled-components';
@@ -14,11 +14,29 @@ type Props = {
 	onFileLoaded: (text: string, file: LoadedFile) => void;
 };
 
+function formatRejection(rejection: FileRejection): string {
+	const error = rejection.errors[0];
+	if (!error) return 'could not load file';
+	switch (error.code) {
+		case 'file-too-large':
+			return `file too large — max ${formatBytes(MAX_FILE_SIZE)}, got ${formatBytes(rejection.file.size)}`;
+		case 'file-invalid-type':
+			return 'wrong type — must be a .json file';
+		case 'too-many-files':
+			return 'drop only one file';
+		default:
+			return error.message;
+	}
+}
+
 export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Props) {
+	const [rejection, setRejection] = useState<string | null>(null);
+
 	const handleDrop = useCallback(
 		(files: File[]) => {
 			const file = files[0];
 			if (!file) return;
+			setRejection(null);
 			file
 				.text()
 				.then((text) => onFileLoaded(text, { name: file.name, size: file.size }))
@@ -27,19 +45,28 @@ export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Prop
 		[onFileLoaded],
 	);
 
+	const handleDropRejected = useCallback((rejections: FileRejection[]) => {
+		const rejected = rejections[0];
+		if (!rejected) return;
+		setRejection(formatRejection(rejected));
+	}, []);
+
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop: handleDrop,
+		onDropRejected: handleDropRejected,
 		accept: { 'application/json': ['.json'] },
 		maxFiles: 1,
 		maxSize: MAX_FILE_SIZE,
 	});
+
+	const isInvalid = rejection !== null || (loadedFile !== null && hasErrors);
 
 	return (
 		<Dropzone
 			{...getRootProps()}
 			$active={isDragActive}
 			$loaded={loadedFile !== null}
-			$invalid={loadedFile !== null && hasErrors}
+			$invalid={isInvalid}
 		>
 			<input {...getInputProps()} />
 			{loadedFile ? (
@@ -72,6 +99,7 @@ export function DropSource({ loadedFile, hasErrors = false, onFileLoaded }: Prop
 					</DropMeta>
 				</>
 			)}
+			{rejection && <RejectionLine role="alert">{rejection}</RejectionLine>}
 		</Dropzone>
 	);
 }
@@ -178,4 +206,11 @@ const DropMeta = styled.div`
 
 const DropMetaSep = styled.span`
 	color: ${(props) => props.theme.colors.border};
+`;
+
+const RejectionLine = styled.div`
+	color: ${(props) => props.theme.colors.error};
+	font-size: ${(props) => props.theme.fontSize.xs};
+	letter-spacing: ${(props) => props.theme.tracking.wider};
+	text-transform: uppercase;
 `;
