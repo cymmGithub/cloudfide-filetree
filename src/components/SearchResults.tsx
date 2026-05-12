@@ -17,7 +17,7 @@ export function SearchResults({ results, query }: Props) {
 		return (
 			<Empty>
 				<EmptyGlyph>—</EmptyGlyph>
-				<span>Brak wyników dla &quot;{query}&quot;</span>
+				<span>No results for &quot;{query}&quot;</span>
 			</Empty>
 		);
 	}
@@ -32,9 +32,8 @@ export function SearchResults({ results, query }: Props) {
 					<NoteTag>note</NoteTag>
 					<NoteSep>│</NoteSep>
 					<span>
-						Pokazuję pierwsze <strong>{VISIBLE_LIMIT}</strong> z{' '}
-						<strong>{results.length.toLocaleString('en-US')}</strong> dopasowań — uściślij
-						zapytanie.
+						Showing first <strong>{VISIBLE_LIMIT}</strong> of{' '}
+						<strong>{results.length.toLocaleString('en-US')}</strong> matches — refine your query.
 					</span>
 				</TruncationNote>
 			) : (
@@ -42,7 +41,7 @@ export function SearchResults({ results, query }: Props) {
 					<CountTag>matches</CountTag>
 					<CountSep>│</CountSep>
 					<CountVal>
-						<strong>{results.length}</strong> {results.length === 1 ? 'wynik' : 'wyników'} dla
+						<strong>{results.length}</strong> {results.length === 1 ? 'result' : 'results'} for
 						&quot;{query}&quot;
 					</CountVal>
 				</Count>

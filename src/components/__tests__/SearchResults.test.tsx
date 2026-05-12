@@ -16,7 +16,7 @@ const sampleResults: FlatEntry[] = [
 describe('SearchResults', () => {
 	it('shows empty state when nothing matches the query', () => {
 		renderWithProviders(<SearchResults results={[]} query="xyz" />);
-		expect(screen.getByText(/Brak wyników/i)).toBeInTheDocument();
+		expect(screen.getByText(/No results/i)).toBeInTheDocument();
 	});
 
 	it('renders matching results with their parent paths and clickable links', () => {
