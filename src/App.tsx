@@ -1,26 +1,16 @@
-import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { HomePage } from './pages/HomePage';
-import { TreePage } from './pages/TreePage';
-import { GlobalStyles } from './styles/GlobalStyles';
-import { theme } from './styles/theme';
-import { ThemeProvider } from 'styled-components';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+declare module '@tanstack/react-router' {
+	interface Register {
+		router: typeof router;
+	}
+}
+
+const router = createRouter({ routeTree });
 
 function App() {
-	return (
-		<ThemeProvider theme={theme}>
-			<GlobalStyles />
-			<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-				<NuqsAdapter>
-					<Routes>
-						<Route path="/" element={<HomePage />} />
-						<Route path="/tree/*" element={<TreePage />} />
-						<Route path="*" element={<div>Not found</div>} />
-					</Routes>
-				</NuqsAdapter>
-			</BrowserRouter>
-		</ThemeProvider>
-	);
+	return <RouterProvider router={router} />;
 }
 
 export default App;

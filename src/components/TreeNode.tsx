@@ -1,6 +1,5 @@
 import type { TreeNode as TreeNodeType } from '../types/tree';
-import { Link } from 'react-router-dom';
-import { encodePath } from '../lib/path';
+import { createLink } from '@tanstack/react-router';
 import { FolderIcon } from './FolderIcon';
 import styled from 'styled-components';
 
@@ -21,7 +20,7 @@ export function TreeNode({ node, urlPath, expanded, onToggle, currentPath }: Pro
 			<Item>
 				<Row>
 					<LeadSpacer />
-					<NodeLink to={`/tree/${encodePath(urlPath)}`} $current={isCurrent}>
+					<NodeLink to={'/tree/$'} params={{ _splat: urlPath.join('/') }} $current={isCurrent}>
 						<Tick $current={isCurrent} />
 						<FileGlyph $current={isCurrent}>·</FileGlyph>
 						<Name $current={isCurrent}>{node.name}</Name>
@@ -44,7 +43,7 @@ export function TreeNode({ node, urlPath, expanded, onToggle, currentPath }: Pro
 				>
 					{isExpanded ? '▾' : '▸'}
 				</Toggle>
-				<NodeLink to={`/tree/${encodePath(urlPath)}`} $current={isCurrent}>
+				<NodeLink to={'/tree/$'} params={{ _splat: urlPath.join('/') }} $current={isCurrent}>
 					<Tick $current={isCurrent} />
 					<FolderGlyph $current={isCurrent} $expanded={isExpanded}>
 						<FolderIcon />
@@ -107,7 +106,7 @@ const Toggle = styled.button<{ $expanded: boolean }>`
 	}
 `;
 
-const NodeLink = styled(Link)<{ $current: boolean }>`
+const NodeLink = createLink(styled.a<{ $current: boolean }>`
 	display: flex;
 	align-items: center;
 	gap: 0;
@@ -124,7 +123,7 @@ const NodeLink = styled(Link)<{ $current: boolean }>`
 		text-decoration: none;
 		box-shadow: none;
 	}
-`;
+`);
 
 const Tick = styled.span<{ $current: boolean }>`
 	display: block;

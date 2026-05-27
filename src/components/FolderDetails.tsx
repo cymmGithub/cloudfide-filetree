@@ -1,7 +1,6 @@
 import type { FolderNode } from '../types/tree';
-import { Link } from 'react-router-dom';
+import { createLink } from '@tanstack/react-router';
 import { formatBytes } from '../lib/format';
-import { encodePath } from '../lib/path';
 import { calculateSize } from '../lib/traverse';
 import { FolderIcon } from './FolderIcon';
 import styled from 'styled-components';
@@ -72,7 +71,7 @@ export function FolderDetails({ node, path }: Props) {
 				<List>
 					{node.children.map((child) => (
 						<li key={child.name}>
-							<ChildLink to={`/tree/${encodePath([...path, child.name])}`}>
+							<ChildLink to="/tree/$" params={{ _splat: [...path, child.name].join('/') }}>
 								<ChildGlyph $type={child.type}>
 									{child.type === 'file' ? '·' : <FolderIcon size={12} />}
 								</ChildGlyph>
@@ -222,7 +221,7 @@ const List = styled.ul`
 	padding: 0;
 `;
 
-const ChildLink = styled(Link)`
+const ChildBaseLink = styled.a`
 	display: grid;
 	grid-template-columns: 1.5ch 1fr auto auto;
 	align-items: center;
@@ -239,6 +238,8 @@ const ChildLink = styled(Link)`
 		box-shadow: none;
 	}
 `;
+
+const ChildLink = createLink(ChildBaseLink);
 
 const ChildGlyph = styled.span<{ $type: 'file' | 'folder' }>`
 	color: ${(props) =>
@@ -282,7 +283,7 @@ const ChildArrow = styled.span`
 		opacity 0.15s ease,
 		transform 0.15s ease;
 
-	${ChildLink}:hover & {
+	${ChildBaseLink}:hover & {
 		opacity: 1;
 		color: ${(props) => props.theme.colors.accent};
 		transform: translateX(2px);

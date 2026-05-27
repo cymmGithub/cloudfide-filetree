@@ -1,21 +1,21 @@
-import { parseAsString, useQueryState } from 'nuqs';
+import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import styled from 'styled-components';
 
-const THROTTLE_MS = 200;
+const treeRoute = getRouteApi('/tree/$');
 
 export function SearchInput() {
-	const [value, setValue] = useQueryState(
-		'q',
-		parseAsString.withDefault('').withOptions({ throttleMs: THROTTLE_MS }),
-	);
+	const { q } = treeRoute.useSearch();
+	const navigate = useNavigate();
 
 	return (
-		<Wrap $active={value.length > 0}>
+		<Wrap $active={q.length > 0}>
 			<Input
 				type="search"
 				placeholder="search for files || folders..."
-				value={value}
-				onChange={(e) => setValue(e.target.value)}
+				value={q}
+				onChange={(e) =>
+					navigate({ to: '.', search: (prev) => ({ ...prev, q: e.target.value }), replace: true })
+				}
 				spellCheck={false}
 			/>
 		</Wrap>

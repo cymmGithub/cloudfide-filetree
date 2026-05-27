@@ -1,6 +1,5 @@
+import { createLink } from '@tanstack/react-router';
 import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
-import { encodePath } from '../lib/path';
 import styled from 'styled-components';
 
 interface Props {
@@ -12,7 +11,9 @@ export function Breadcrumbs({ path }: Props) {
 
 	return (
 		<Nav aria-label="Breadcrumb">
-			<Crumb to="/tree">Home</Crumb>
+			<Crumb to="/tree/$" params={{ _splat: '' }}>
+				Home
+			</Crumb>
 			{path.map((segment, i) => {
 				const isLast = i === path.length - 1;
 				const partial = path.slice(0, i + 1);
@@ -22,7 +23,9 @@ export function Breadcrumbs({ path }: Props) {
 						{isLast ? (
 							<Current aria-current="page">{segment}</Current>
 						) : (
-							<Crumb to={`/tree/${encodePath([...partial])}`}>{segment}</Crumb>
+							<Crumb to="/tree/$" params={{ _splat: partial.join('/') }}>
+								{segment}
+							</Crumb>
 						)}
 					</Fragment>
 				);
@@ -41,7 +44,7 @@ const Nav = styled.nav`
 	min-width: 0;
 `;
 
-const Crumb = styled(Link)`
+const Crumb = createLink(styled.a`
 	color: ${(props) => props.theme.colors.muted};
 	text-decoration: none;
 	padding: 0;
@@ -52,7 +55,7 @@ const Crumb = styled(Link)`
 		box-shadow: inset 0 -1px 0 ${(props) => props.theme.colors.accent};
 		text-decoration: none;
 	}
-`;
+`);
 
 const Current = styled.span`
 	color: ${(props) => props.theme.colors.text};

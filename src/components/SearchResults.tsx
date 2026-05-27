@@ -1,6 +1,5 @@
 import type { FlatEntry } from '../lib/traverse';
-import { Link } from 'react-router-dom';
-import { encodePath } from '../lib/path';
+import { createLink } from '@tanstack/react-router';
 import { FolderIcon } from './FolderIcon';
 import { HighlightedText } from './HighlightedText';
 import styled from 'styled-components';
@@ -52,7 +51,7 @@ export function SearchResults({ results, query }: Props) {
 						entry.segments.length > 1 ? `/${entry.segments.slice(0, -1).join('/')}` : '/';
 					return (
 						<li key={entry.segments.join('/')}>
-							<ResultLink to={`/tree/${encodePath([...entry.segments])}`}>
+							<ResultLink to={`/tree/$`} params={{ _splat: entry.segments.join('/') }}>
 								<Glyph $type={entry.type}>
 									{entry.type === 'file' ? '·' : <FolderIcon size={12} />}
 								</Glyph>
@@ -157,7 +156,7 @@ const List = styled.ul`
 	flex-direction: column;
 `;
 
-const ResultLink = styled(Link)`
+const ResultBaseLink = styled.a`
 	display: grid;
 	grid-template-columns: 1.5ch 1fr auto;
 	align-items: center;
@@ -178,6 +177,8 @@ const ResultLink = styled(Link)`
 		box-shadow: none;
 	}
 `;
+
+const ResultLink = createLink(ResultBaseLink);
 
 const Glyph = styled.span<{ $type: 'file' | 'folder' }>`
 	color: ${(props) =>
@@ -228,7 +229,7 @@ const ResultArrow = styled.span`
 		opacity 0.15s ease,
 		transform 0.15s ease;
 
-	${ResultLink}:hover & {
+	${ResultBaseLink}:hover & {
 		opacity: 1;
 		color: ${(props) => props.theme.colors.accent};
 		transform: translateX(2px);

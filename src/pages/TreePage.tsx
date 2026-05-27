@@ -1,6 +1,6 @@
-import { parseAsString, useQueryState } from 'nuqs';
+import { getRouteApi } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { useDeferredValue, useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { CopyPathButton } from '../components/CopyPathButton';
 import { FileDetails } from '../components/FileDetails';
@@ -13,13 +13,14 @@ import { loadTree } from '../lib/storage';
 import { buildFlatIndex, findNode, searchIndex } from '../lib/traverse';
 import styled, { keyframes } from 'styled-components';
 
+const treeRoute = getRouteApi('/tree/$');
+
 export function TreePage() {
 	const tree = useMemo(() => loadTree(), []);
-	const params = useParams();
-	const [rawQuery] = useQueryState('q', parseAsString.withDefault(''));
-	const splat = params['*'] ?? '';
-	const currentPath = decodePath(splat);
-	const query = rawQuery.trim();
+	const { q } = treeRoute.useSearch();
+	const { _splat } = treeRoute.useParams();
+	const currentPath = decodePath(_splat ?? '');
+	const query = q.trim();
 
 	const deferredQuery = useDeferredValue(query);
 

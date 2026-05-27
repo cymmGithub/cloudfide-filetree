@@ -1,5 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DropSource, type LoadedFile } from '../components/DropSource';
 import { type EnrichedError, ErrorReport } from '../components/ErrorReport';
 import { JsonEditor, type JsonEditorHandle } from '../components/JsonEditor';
@@ -68,7 +68,7 @@ export function HomePage() {
 	const handleLoad = () => {
 		if (!parseResult?.ok) return;
 		saveTree(parseResult.tree);
-		navigate('/tree');
+		navigate({ to: '/tree/$' });
 	};
 
 	const canLoad = parseResult?.ok === true;
